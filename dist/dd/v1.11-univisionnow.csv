@@ -1,0 +1,154 @@
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,Category,Attribute,Data type,"Mobile Platforms -
+IOS
+Android
+Android TV
+Fire TV
+Apple TV
+
+","Web Platforms -
+Web
+Tizen
+LG 
+Web OS",Roku ,Description,Sample Values,APP_START,APP_FOREGROUND,APP_BACKGROUND,SIGN_UP,LOGIN,LOGOUT,CONSENT,SEARCH,VIEW_PLANS,SUBSCRIPTION_INITIATED,PAYMENT_INITIATED,PURCHASE_SUBSCRIPTION,PURCHASE_SUBSCRIPTION_CANCEL,PURCHASE_SUBSCRIPTION_FAILURE,FORGOT_PASSWORD,LINK_DEVICE,VIEW_CONTENT_DETAILS,FAVORITE_CONTENT,STOREFRONT_TAB_CHANGE,MENU_TAB_CHANGE,VIEW_COLLECTION_DETAILS,PLAYBACK_START,PLAYBACK_PREPARED,PLAYBACK_STARTED,PLAYBACK_INPROGRESS,PLAYBACK_BUFFERING_START,PLAYBACK_BUFFERING_END,PLAYBACK_SEEK_START,PLAYBACK_SEEK_COMPLETE,PLAYBACK_PAUSED,PLAYBACK_RESUMED,PLAYBACK_STOPPED,PLAYBACK_COMPLETE,ERROR,SKIP_INTRO,SKIP_CREDITS,NEXT_EPISODE,DOWNLOAD_START,DOWNLOAD_PREPARED,DOWNLOAD_STARTED,DOWNLOAD_INPROGRESS,DOWNLOAD_PAUSED,DOWNLOAD_RESUMED,DOWNLOAD_STOPPED,DOWNLOAD_COMPLETED,DOWNLOAD_DELETED,AD_BREAK_START,AD_START,AD_END,AD_BREAK_COMPLETE,AD_SKIP,AD_VIEW
+,Key Event Identifiers,timestamp,String,Default,Default,Default,Timestamp for the event collected,1602823543190,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,eventTimestamp,String,Custom,Custom,Custom,Timestamp for the event collected,1737693712207,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,eventUUID,String,Custom,Custom,Custom,Unique identifer for every event logged,5D45AFCD-6BAE-4295-A4C4-FB00419A9CFE,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,platformName,String,Custom,Custom,Custom,Unique identifier for the platform that originated the event,"Enumerated:  iOS, Android, tvOS, Android TV, FireTV, Car Play, Android Auto, Chromecast, web, Tizen, Vizio, Roku",Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,eventName,String,Custom,Custom,Custom,"Name of event, consolidating actionName and name",PLAYBACK_START,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,actionName,String,NA,Custom,Custom,Name of event for web based implementations,PLAYBACK_START,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,trackingID,String,Custom,Custom,Custom,The trackingId is currently being sent by the backend with every request,3934a66c-6daf-4a18-a4fd-282fb5f2a30b,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,name,String,Custom,NA,NA,Name of event for app based implementations,PLAYBACK_START,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,Application,appName,String,Default,Custom,Custom,The name of the application,[App name] Prod - TVE,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,appVersion,String,Default,Custom,Custom,The version of the application,1.0.1 - Build version,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,appVersionId,String,Default,Custom,Custom,Unique identifier generated for each build or variant of the mobile application.  Does not apply to web,673198239,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,appBuild,String,Default,Custom,Default,Application build.  Does not apply to web,29,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,Application Session,sessionId,String,Default,NA,Custom,A unique identifier for a single user session. A new sessionId is created each time the app is brought into the foreground.  For app collected events only,88996F14-35E9-4D5E-8846-EED8E62FBF9E,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,session,String,NA,Default,NA,A unique identifier for a single session. The session cookie expires when the user closes the browser.  A new session identifier will be assigned when the user opens up a new instance of the browser.  For web / smart tv  based collected events,E346B701-EB16-427D-B152-80D9DB728956,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,timeSinceLoad,Numeric,Default,NA,NA,The length of time for which the user used the application in seconds.,601.2639999,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,sessionDuration,Numeric,Default,NA,NA,The length of time for which the user used the application in seconds.  See timeSinceLoad for better accuracy,601.2639999,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,sessionDurationSec,Numeric,NA,NA,Custom,The length of time for which the user used the application in seconds. ,601.2639999,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,Content,contentID,String,Custom,Custom,Custom,Unique identifier for content,73DF66D3-B2E8-4ADE-A353-EB9E73BC26B7,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,externalContentID,String,Custom,Custom,Custom,Unique identifier for content from external system,F48FD40E-B7D4-4B79-92E9-7A215AAC6CC8-1586846597643,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,enrichmentContentID,String,Custom,Custom,Custom,Unique identifier for content from external system,G48FD40E-B7D4-4B79-92E9-7A215AAC6CC8-1586846597643,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,contentType,String,Custom,Custom,Custom,Content type,"movie, tvepisode, airing",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,contentName,String,Custom,Custom,Custom,Content name,S.02 E.26 - Love Island (HD),N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,providerID,String,Custom,Custom,Custom,Content provider ID.  Not applicable for Univision currently,content_provider_name,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,contentDurationSec,Integer,Custom,Custom,Custom,Content duration (seconds),3158,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,N,N,N,N,Y,Y,Y,Y,Y,Y,N,N,Y,Y,Y,Y,Y,Y
+,,channelID,String,Custom,Custom,Custom,Channel ID,9D157B99-C376-400E-B994-62F46776C69F,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,channelName,String,Custom,Custom,Custom,Channel name,Live channel name,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,programID,String,Custom,Custom,Custom,Program ID,DD6A47DF-99BA-4303-85E5-8D2B2E98627A,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,programName,String,Custom,Custom,Custom,Program name,Program Name,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,contentGenre,String,Custom,Custom,Custom,Content genre,Reality,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,seriesID,String,Custom,Custom,Custom,Series ID,2CDF11F3-9026-493B-B318-D5FE1BBDD205,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,seriesName,String,Custom,Custom,Custom,Series name,The Sopranos,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,seasonNumber,String,Custom,Custom,Custom,Season number,3,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,episodeNumber,String,Custom,Custom,Custom,Episode number,5,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteTMSID,String,Custom,Custom,Custom,Gracenote TMS ID - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteRootID,String,Custom,Custom,Custom,Gracenote Root ID - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteSeriesID,String,Custom,Custom,Custom,Gracenote Series ID - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteSubType,String,Custom,Custom,Custom,Gracenote Sub Type - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteTitle,String,Custom,Custom,Custom,Gracenote Title - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteEntityType,String,Custom,Custom,Custom,Gracenote Entity Type - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteGenres,String,Custom,Custom,Custom,Gracenote Genres - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,gracenoteSportsEventTitle,String,Custom,Custom,Custom,Gracenote Sports Event Title - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,gracenoteSportsTeamBrandId,String,Custom,Custom,Custom,Gracenote Sports Team Brand ID - Live only,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,gracenoteSportsTeamNameHome,String,Custom,Custom,Custom,"Gracenote Sports Team Name, Home - Live only",TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,gracenoteSportsTeamNameAway,String,Custom,Custom,Custom,"Gracenote Sports Team Name, Away - Live only",TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,Playback,playbackSessionID,String,Custom,Custom,Custom,Unique identifier for playback session,b887aab3-a38f-42a7-a495-09710771f33a ,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,O,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,programPlaybackSessionID,String,Custom,Custom,Custom,Unique identifier for program playback session,3e569888-372a-41f1-9df9-0b53ced9b689,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,streamID,String,Custom,Custom,Custom,Streaming session ID generated by Google IMA,TBD,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,playerName,String,Custom,Custom,Custom,Player name,Exoplayer,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,playbackURL,String,Custom,Custom,Custom,Playback URL,http://<hostname>/ss/s/afdt3754850020092602/2020-09-29-01-57-32/AFDM0000071527442800/output_hls.ism/index.mpd,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,O,Y,Y,O,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,lastPlayedVariant,String,Custom,Custom,Custom,Last played variant,3212336,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,lastAttemptedVariant,String,Custom,Custom,Custom,Last attempted variant,3212336,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,playbackStartedTimeSec,Integer,Custom,Custom,Custom,"Total time from PLAYBACK_START to PLAYBACK_STARTED captured in seconds, use decimal points to indicate milliseconds",5,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,licenseLoadTimeMs,Integer,Custom,Custom,Custom,The time taken (in milliseconds) to acquire or load a DRM (Digital Rights Management) license,2300,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,preRollAdLoadTimeMs,Integer,Custom,Custom,Custom,The duration (in milliseconds) it takes to load a pre-roll ad,2300,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,ssaiStreamUrlFetchTimeMs,Integer,Custom,Custom,Custom,"The time (in milliseconds) it takes to fetch the streaming URL from the Server-Side Ad Insertion (SSAI) service,",2300,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,isDownloadable,Boolean,Custom,NA,NA,Content is downloadable,TRUE or FALSE,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,playbackDurationSec,Integer,Custom,Custom,Custom,Total playback duration from playback started in seconds,241,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,programPlaybackDurationSec,Integer,Custom,Custom,Custom,Total playback duration for current program in seconds,60,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,isCasting,Boolean,Custom,NA,NA,Content is being casted,TRUE or FALSE,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,contentLanguage,String,Custom,Custom,Custom,Lanuge of the content,"Content display Language - English, etc.",Y,Y,Y,N,N,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,playbackMode,String,Custom,Custom,Custom,Mode of the player,"Enum:  live, catchup, vod",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,source,String,Custom,Custom,Custom,Source of event,"In-app banner, Content Details Page, Menu",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,ccEnabled,Boolean,Custom,Custom,Custom,Close captioning is enabled,TRUE or FALSE,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,currentPosition,Integer,Custom,Custom,Custom,Current position of the player,4069 secs,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,Error,errorCode,String,Custom,Custom,Custom,Application error,131334,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,errorMessage,String,Custom,Custom,Custom,Application error message,The server has responded with an error!,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,errorDescription,String,Custom,Custom,Custom,Application error description,"Optional<String>
+        - some : ""{\""header\"":{\""code\"":-1,\""message\"":\""Failure\"",\""errors\"":[{\""description\"":\""Invalid content metadata\"",\""code\"":\""40050120\""}],\""source\"":\""005-01\"",\""system_time\"":1602825904729,\""tracking_id\"":\""3162d924-af26-4287-aac6-487a5add027d\""}}""",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,errorInternal,String,Custom,Custom,Custom,Application internal error,"Optional<QPError>
+    ▿some : ErrorObject
+      - errorCode : 40050120
+      - errorDescription : ""Invalid content metadata",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,internalError,String,Custom,Custom,Custom,JSON String of Application internal error,,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,errorType,String,Custom,Custom,Custom,Type of error,"PLAYBACK_ERROR, UMS_ERROR, AD_ERROR, APP_ERROR, DOWNLOAD_ERROR",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,errorSeverity,String,Custom,Custom,Custom,"Severity of the error, player only","All PLAYBACK_ERROR, AD_ERROR, DOWNLOAD_ERROR errorTypes can be tagged as CRTICAL
+All APP_ERROR errorType can be tagged as WARNING
+All UMS_ERROR errorType can be tagged as INFO",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,Device,device,String,Default,Custom,Custom,Device name,SM-T387W,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,deviceGroup,String,Default,Custom,Custom,"Category of the device, such as iPhone or Tablet",Tablet,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,deviceManufacturer,String,Default,Custom,Custom,Device manufacturer,Samsung,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,deviceModel,String,Default,Custom,Custom,Device model,SM-T387W,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,deviceType,String,Default,Custom,Custom,Device type,"mobile, tablet, or desktop",Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,deviceCapability,String,Custom,Custom,Custom,"Indicates the performance category of the user's device, typically classified based on hardware capabilities such as CPU, memory, and GPU","HIGH_END, MID_RANGE, LOW_END",Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,hevcCodecName,String,Custom,Custom,Custom,"Specifies the exact codec string used for HEVC (High Efficiency Video Coding), also known as H.265",hev1.1.6.L120.90,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,O,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,avcCodecName,String,Custom,Custom,Custom,"Specifies the codec string used for AVC (Advanced Video Coding), also known as H.264.",avc1.42E01E,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,Y,O,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,userAgentName,String,NA,Default,NA,"Browser’s name, such as Chrome and Firefox, obtained from the User-Agent header of an HTTP request.  Web only","Chrome, Firefox",Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,userAgentOS,String,NA,Default,NA,"Browser’s reported operating system, such as Windows or Linux, that it is running on. This is obtained from the User-Agent header of an HTTP request.  Web only",Browsers' Version,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,osName,String,Default,NA,Custom,"Name of the app's host operating system, for example, iOS or Android
+",Android,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,osVersion,String,Default,NA,Custom,"Full version number of the app's host operating system, such as iOS 11.0.4, as compared to iOS 11",13.123,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,osMajorVersion,String,Default,NA,Default,"Major version number of the app's host operating system, such as iOS 11, as compared to iOS 11.0.4",13,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,Location,city,String,Default,Default,Default,City,Oshawa,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,countryCode,String,Default,Default,Default,"Country code. For a list of country codes, see ISO 3166-1 alpha-2.",CA,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,regionCode,String,Default,Default,Default,Region,25,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,Network,asn,String,Default,Default,Default,Unique number to identify a group of IP networks serving content to the end user,10796,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,asnLatitude,Numeric,Default,Default,Default,"Latitude of the geographic center of the postal code where the ASN is registered. This is not the end user's latitude
+",40.7831,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,asnLongitude,Numeric,Default,Default,Default,"Longitude of the geographic center of the postal code where the ASN is registered. This is not the end user's latitude
+",73.9712,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,asnOwner,String,Default,Default,Default,Telecom owner of the ASN,Time Warner Cable Internet LLC,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,observedBandwidth,Integer,Custom,Custom,Custom,Bandwidth observed during that particular period of time. (In Bits),8728,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,O,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N
+,,carrier,String,Default,NA,Default,"Network over which the app transferred data, such as wifi or [carrier name]",wifi,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,User,userID,String,Custom,Custom,Custom,Unique identifier for the logged in user,encrypted or masked ID from UMS,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,userType,String,Custom,Custom,Custom,User type.  May not be available for app_start and app_forgeground due to latency to retrieve login status,"Enumerated:  
+DTC = registered, subscribed, cancelled, anonymous, vip
+TVE = subscribed, anonymous",O,O,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,deviceID,String,Default,Default,Default,"Device identifier, auto-generated",1c8dd2c3-5362-415d-aed4-043f6d78085f,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,baseSubscription,String,Custom,Custom,Custom,Subscription package,"Monthly, Yearly-Telugu, Yearly-Tamil",N,N,N,N,N,N,Y,N,N,N,N,N,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,tveProvider,String,Custom,Custom,Custom,TVE provider,"youtubetv, dish, directv, cox, etc.",N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,ip_address,String,Custom,Custom,Custom,IPv4 address,01.102.103.104,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,Consent,consentPurpose,String,Custom,Custom,Custom,Purpose of the consent,personalization,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,consentGiven,Boolean,Custom,Custom,Custom,Consent given,TRUE or FALSE,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,consentWithdrawn,Boolean,Custom,Custom,Custom,Consent withdrawn,TRUE or FALSE,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,"User Journey
+",pageID,String,Custom,Custom,Custom,"Page identifier.  For specific use cases to identify pages, events will describe navigation primarily","Home, Movies, Search,Retention Prompt, Settings",N,N,N,N,N,N,N,N,O,O,O,N,N,N,N,N,O,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,N,N,N,N,N,N,N,N,N,N,N
+,,storefrontID,String,Custom,Custom,Custom,"Storefront identifier.  Only valid for cases where content reached without a deeplink.  Not valid when users navigations from Search, EPG or My Library page",A7EBBEC2-B873-4625-9D31-EA7D93500E7B,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,tabID,String,Custom,Custom,Custom,Tab identifier.  Only valid for cases where content reached without a deeplink,E10D473C-412A-4AFC-B687-A401D8916A01,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,O,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,tabName,String,Custom,Custom,Custom,Tab name.  Only valid for cases where content reached without a deeplink,Tab name where the user selected the content to play,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,O,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,containerID,String,Custom,Custom,Custom,Container identifier.  Only valid for cases where content reached without a deeplink,3E0CF0B0-F48F-42E1-A207-780DBD9945A1,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,O,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,containerName,String,Custom,Custom,Custom,Conatiner name.  Only valid for cases where content reached without a deeplink,Container name where the user selected the content to play,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,O,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,collectionID,String,Custom,Custom,Custom,Collection identifier.  Only valid for cases where content reached without a deeplink,collection_id,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,collectionName,String,Custom,Custom,Custom,Collection name.  Only valid for cases where content reached without a deeplink,collection_name,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+,,previous_screen,String,Custom,Custom,Custom,Previous screen,"Settings, MyContent, Browse",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,current_screen,String,Custom,Custom,Custom,Current screen,"Settings, MyContent, Browse",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,favoriteAction,String,Custom,Custom,Custom,Favourite clicked,ADD or DELETE,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,searchString   ,String,Custom,Custom,Custom,Search string,Fairchild,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,totalItems,Integer,Custom,Custom,Custom,Total items returned by search,Search items count,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,planName,String,Custom,Custom,Custom,Plan name that the user selected under view plans,"[plan name] monthly, [plan name] yearly, etc.",N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,displayLanguage,String,Custom,Custom,Custom,Display language for app,"App display Language - English, etc.",Y,Y,Y,N,N,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,prefDownloadOnWifiOnly,Boolean,Custom,Custom,Custom,User prefers download on wifi only,TRUE or FALSE,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,O,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,priceCode,String,Custom,Custom,Custom,Price code for TVOD,Credits / Rental price code of a content user chooses to redeem or rent,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,Ads,adType,String,Custom,Custom,Custom,Ad type,"preroll, midroll, postroll,  banner, banner-inhouse",N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,Y,Y,Y,Y
+,,adDuration,String,Custom,Custom,Custom,Ad duration,duration in sec,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,Y,N
+,,adskipOffset,String,Custom,Custom,Custom,"During ad break, adSkipOffset reports the ad position which the user skipped on.  If they skipped on the first ad in the break it would be 1, if they skipped 2nd ad in the break it would be 2",AD skip offset value,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,Y,Y,N,Y,N
+,Ops,memUsageMb,Numeric,Default,NA,NA,Memory usage by the app,35,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,lastInteraction,String,Default,NA,Default,"The last interaction before a crash or harvest event, if one is present.",Display UICompatibilityInputViewController,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,install,Boolean,Default,NA,Default,"Indicates true only if the current session is the first session after app install.
+",TRUE,Y,Y,Y,Y,Y,Y,Y,Y,N,N,N,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+,,timeToAppStart,Integer,Custom,Custom,Custom,Time to start app (milliseconds),5232,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,silentLogin,Boolean,Custom,Custom,Custom,App silently logged in,TRUE or FALSE,O,N,N,N,Y,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N
+,,platform,String,Default,NA,Default,"Platform type of the New Relic SDK agent, such as native or React",Native,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y

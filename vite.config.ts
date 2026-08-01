@@ -3,7 +3,24 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    proxy: {
+      "/nr-graphql": {
+        target: "https://api.newrelic.com",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/nr-graphql/, "/graphql"),
+        configure: (proxy) => {
+          // Ensure custom headers (Api-Key) are forwarded to NR
+          proxy.on("proxyReq", (proxyReq, req) => {
+            const apiKey = req.headers["api-key"];
+            if (apiKey) proxyReq.setHeader("Api-Key", apiKey);
+          });
+        },
+      },
+    },
+  },
   base: "/new-relic-validator/",
   build: {
     outDir: "dist",

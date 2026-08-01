@@ -1794,7 +1794,7 @@ export const AnalyticsApp = () => {
     "All" | Platform
   >("All");
   const [selectedDictionary, setSelectedDictionary] =
-    useState<string>("v1.12-gray-media");
+    useState<string>("default");
   const [selectedSessionId, setSelectedSessionId] = useState<string>("All");
   const [selectedPlaybackSessionId, setSelectedPlaybackSessionId] =
     useState<string>("All");
@@ -2670,7 +2670,7 @@ export const AnalyticsApp = () => {
                     }
                   }}
                 >
-                  <option value="v1.12-gray-media">Default</option>
+                  <option value="default">Default</option>
                   <option value="new">Create New Dictionary</option>
                 </select>
               </div>

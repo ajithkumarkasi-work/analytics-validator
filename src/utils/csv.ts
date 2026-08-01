@@ -6,9 +6,10 @@ export const parseCSV = (text: string): string[][] => {
   }
 
   const parsed = Papa.parse<string[]>(text, {
+    delimiter: ",",
     dynamicTyping: false,
-    skipEmptyLines: true
-  })
+    skipEmptyLines: true,
+  });
 
   if (parsed.errors.length > 0) {
     throw new Error(parsed.errors[0].message)

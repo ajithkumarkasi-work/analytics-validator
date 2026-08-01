@@ -21,7 +21,7 @@ export default defineConfig({
       },
     },
   },
-  base: "/",
+  base: "/new-relic-validator/",
   build: {
     outDir: "dist",
     assetsDir: "assets",

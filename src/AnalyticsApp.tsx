@@ -28,7 +28,7 @@ import {
 } from "./utils/analyticsLogic";
 import { AttributeTooltip } from "./components/AttributeTooltip";
 
-const DEFAULT_DICTIONARY_PATH = "/dd/";
+const DEFAULT_DICTIONARY_PATH = `${import.meta.env.BASE_URL}dd/`;
 
 const readFileText = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -1835,7 +1835,7 @@ export const AnalyticsApp = () => {
 
   // Auto-load demo.csv events for testing
   useEffect(() => {
-    fetchTextOrThrow("/dd/demo.csv", "Failed to fetch demo events")
+    fetchTextOrThrow(`${import.meta.env.BASE_URL}dd/demo.csv`, "Failed to fetch demo events")
       .then(handleRealTimeContent)
       .catch((error) => console.warn("Demo CSV load skipped:", error));
   }, []);

@@ -1628,7 +1628,7 @@ export const AnalyticsApp = () => {
     "All" | Platform
   >("All");
   const [selectedDictionary, setSelectedDictionary] =
-    useState<string>("v1.12-gray-media");
+    useState<string>("default");
   const [selectedSessionId, setSelectedSessionId] = useState<string>("All");
   const [selectedPlaybackSessionId, setSelectedPlaybackSessionId] =
     useState<string>("All");
@@ -2227,8 +2227,8 @@ export const AnalyticsApp = () => {
                     setSelectedDictionary(event.target.value)
                   }
                 >
-                  <option value="v1.12-gray-media">Default</option>
-                  <option value="v1.12-amd-comedytv">AMD ComedyTV v1.12</option>
+                  <option value="default">Default</option>
+                  <option value="new">Create New Dictionary</option>
                 </select>
               </div>
             </div>
@@ -2311,6 +2311,10 @@ export const AnalyticsApp = () => {
               </div>
             </div>
           </div>
+          <p className="input-config-note">
+            Default demo analytics data CSV is preloaded. Upload a file only if
+            you want to replace it.
+          </p>
         </section>
 
         {dictLoaded && (

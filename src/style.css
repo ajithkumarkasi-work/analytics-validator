@@ -2889,30 +2889,22 @@
 
 /* New simplified input configuration styles */
 .analytics-app .input-config-stack {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 180px 180px minmax(360px, 1fr) auto;
+  align-items: end;
+  column-gap: 16px;
+  row-gap: 8px;
 }
 
 .analytics-app .input-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
-  min-width: 180px;
-}
-
-/* Make Analytics Data input group larger */
-.analytics-app .input-group:nth-child(3) {
-  flex: 4;
-  min-width: 280px;
+  min-width: 0;
 }
 
 .analytics-app .input-group:last-child {
-  flex: 0 0 auto;
-  min-width: auto;
-  align-self: flex-end;
+  justify-self: end;
 }
 
 .analytics-app .input-label {
@@ -2938,8 +2930,14 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
-  min-width: 200px;
+  min-width: 0;
+}
+
+.analytics-app .input-config-note {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-light);
 }
 
 .analytics-app .file-drop-compact {
@@ -3021,7 +3019,7 @@
   gap: 4px;
   padding: 2px 8px;
   border-radius: 4px;
-  min-width: 140px;
+  min-width: 156px;
 }
 
 .analytics-app .process-notes {
@@ -3038,6 +3036,7 @@
 
 @media (max-width: 680px) {
   .analytics-app .input-config-stack {
+    display: flex;
     flex-direction: column;
     gap: 8px;
   }
@@ -3047,7 +3046,8 @@
   }
 
   .analytics-app .input-group:last-child {
-    flex: 1;
+    justify-self: auto;
+    width: 100%;
   }
 
   .analytics-app .file-drop-compact {

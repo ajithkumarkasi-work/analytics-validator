@@ -2761,6 +2761,10 @@ export const AnalyticsApp = () => {
               </div>
             </div>
           </div>
+          <p className="input-config-note">
+            Default demo analytics data CSV is preloaded. Upload a file only if
+            you want to replace it.
+          </p>
         </section>
 
         {/* New Relic API connector panel */}

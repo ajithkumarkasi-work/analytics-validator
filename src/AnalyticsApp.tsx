@@ -513,63 +513,6 @@ const CoveragePanel = ({
 
   const hasCoverage = analysisPerformed && coverageRows.length > 0;
   const hasExtraAttributes = filteredExtraAttributes.length > 0;
-
-  const summaryStats = useMemo(() => {
-    if (!hasCoverage) return null;
-    let present = 0,
-      partial = 0,
-      missing = 0,
-      optional = 0;
-
-    dictionaryAttributes.forEach((attr) => {
-      const normalizedAttr = normalizeKeyValue(attr);
-      let attrIsOptional = false;
-      coverageRows.forEach((row) => {
-        const dictAttr = selectedDictionaryMap[row.eventName]?.[attr];
-        if (!dictAttr) return;
-        if (dictAttr.status === "O") {
-          attrIsOptional = true;
-          return;
-        }
-        const stats = presenceStatsCache.get(
-          `${row.eventName}:${normalizedAttr}`,
-        );
-        const letter = stats?.letter ?? "N";
-        if (letter === "Y") present++;
-        else if (letter === "P") partial++;
-        else missing++;
-      });
-      if (attrIsOptional) optional++;
-    });
-
-    let extra = 0;
-    extraAttributes.forEach((attr) => {
-      const normalizedAttr = normalizeKeyValue(attr);
-      coverageRows.forEach((row) => {
-        const stats = presenceStatsCache.get(
-          `${row.eventName}:${normalizedAttr}`,
-        );
-        if (stats && stats.presentCount > 0) extra++;
-      });
-    });
-
-    return {
-      present,
-      partial,
-      missing,
-      optional,
-      extra,
-      total: present + partial + missing,
-    };
-  }, [
-    hasCoverage,
-    dictionaryAttributes,
-    extraAttributes,
-    coverageRows,
-    selectedDictionaryMap,
-    presenceStatsCache,
-  ]);
-
   const focusedAttribute = attributeQuery
     ? (filteredDictionaryAttributes[0] ?? filteredExtraAttributes[0] ?? null)
     : null;
@@ -647,8 +590,8 @@ const CoveragePanel = ({
 
     if (!dictionaryAttribute) {
       const emptyStyle: CSSProperties = {
-        background: "var(--cell-empty-bg)",
-        color: "var(--cell-empty-color)",
+        background: "#f9f9f9",
+        color: "#666",
       };
       const title = total
         ? `Not in dictionary for this event (${presentCount}/${total})`
@@ -667,8 +610,8 @@ const CoveragePanel = ({
 
     if (dictionaryAttribute.status === "O") {
       const optionalStyle: CSSProperties = {
-        background: "var(--cell-o-bg)",
-        color: "var(--cell-o-color)",
+        background: "#374151",
+        color: "#fff",
         fontWeight: 600,
       };
       return {
@@ -680,22 +623,18 @@ const CoveragePanel = ({
       };
     }
 
-    const bgVar =
-      letter === "Y"
-        ? "var(--cell-y-bg)"
-        : letter === "P"
-          ? "var(--cell-p-bg)"
-          : "var(--cell-n-bg)";
-    const colorVar =
-      letter === "Y"
-        ? "var(--cell-y-color)"
-        : letter === "P"
-          ? "var(--cell-p-color)"
-          : "var(--cell-n-color)";
+    let background: string;
+    if (letter === "Y") {
+      background = "#def5d8";
+    } else if (letter === "P") {
+      background = "#fff4c2";
+    } else {
+      background = "#f8d7da";
+    }
 
     const requiredStyle: CSSProperties = {
-      background: bgVar,
-      color: colorVar,
+      background,
+      color: "#0f172a",
       fontWeight: 600,
     };
 
@@ -726,13 +665,13 @@ const CoveragePanel = ({
       : `Extra absent (0/${total})`;
     const style: CSSProperties = hasValue
       ? {
-          background: "var(--cell-a-bg)",
-          color: "var(--cell-a-color)",
+          background: "#d6ecff",
+          color: "#1e40af",
           fontWeight: 600,
         }
       : {
-          background: "var(--cell-empty-bg)",
-          color: "var(--cell-empty-color)",
+          background: "#f0f8ff",
+          color: "#475569",
           fontWeight: 400,
         };
 
@@ -832,87 +771,6 @@ const CoveragePanel = ({
           </div>
           <div className="card-header-line"></div>
 
-          {/* Dashboard summary stats */}
-          {summaryStats && (
-            <div className="ds-summary">
-              <div className="ds-cards">
-                <div className="ds-card ds-present">
-                  <div className="ds-value">{summaryStats.present}</div>
-                  <div className="ds-label">Present</div>
-                </div>
-                <div className="ds-card ds-partial">
-                  <div className="ds-value">{summaryStats.partial}</div>
-                  <div className="ds-label">Partial</div>
-                </div>
-                <div className="ds-card ds-missing">
-                  <div className="ds-value">{summaryStats.missing}</div>
-                  <div className="ds-label">Missing</div>
-                </div>
-                <div className="ds-card ds-optional">
-                  <div className="ds-value">{summaryStats.optional}</div>
-                  <div className="ds-label">Optional</div>
-                </div>
-                <div className="ds-card ds-extra">
-                  <div className="ds-value">{summaryStats.extra}</div>
-                  <div className="ds-label">Additional</div>
-                </div>
-              </div>
-              {summaryStats.total > 0 && (
-                <div className="ds-bar-wrap">
-                  <div className="ds-bar" title="Coverage breakdown">
-                    <div
-                      className="ds-seg ds-seg-present"
-                      style={{
-                        width: `${(summaryStats.present / summaryStats.total) * 100}%`,
-                      }}
-                      title={`Present: ${summaryStats.present} (${Math.round((summaryStats.present / summaryStats.total) * 100)}%)`}
-                    />
-                    <div
-                      className="ds-seg ds-seg-partial"
-                      style={{
-                        width: `${(summaryStats.partial / summaryStats.total) * 100}%`,
-                      }}
-                      title={`Partial: ${summaryStats.partial} (${Math.round((summaryStats.partial / summaryStats.total) * 100)}%)`}
-                    />
-                    <div
-                      className="ds-seg ds-seg-missing"
-                      style={{
-                        width: `${(summaryStats.missing / summaryStats.total) * 100}%`,
-                      }}
-                      title={`Missing: ${summaryStats.missing} (${Math.round((summaryStats.missing / summaryStats.total) * 100)}%)`}
-                    />
-                  </div>
-                  <div className="ds-bar-legend">
-                    <span className="ds-leg-item ds-leg-present">
-                      <i />
-                      Present{" "}
-                      {Math.round(
-                        (summaryStats.present / summaryStats.total) * 100,
-                      )}
-                      %
-                    </span>
-                    <span className="ds-leg-item ds-leg-partial">
-                      <i />
-                      Partial{" "}
-                      {Math.round(
-                        (summaryStats.partial / summaryStats.total) * 100,
-                      )}
-                      %
-                    </span>
-                    <span className="ds-leg-item ds-leg-missing">
-                      <i />
-                      Missing{" "}
-                      {Math.round(
-                        (summaryStats.missing / summaryStats.total) * 100,
-                      )}
-                      %
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Session Filters - Always show for testing */}
           <div
             className="session-filters"
@@ -927,11 +785,7 @@ const CoveragePanel = ({
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label
                 htmlFor="session-filter"
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "var(--text-light)",
-                }}
+                style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}
               >
                 Session ID:
               </label>
@@ -940,6 +794,14 @@ const CoveragePanel = ({
                 value={selectedSessionId}
                 onChange={(e) => onSessionIdChange(e.target.value)}
                 className="filter-select"
+                style={{
+                  padding: "4px 24px 4px 8px",
+                  fontSize: "12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  background: "white",
+                  cursor: "pointer",
+                }}
               >
                 <option value="All">All ({sessionIds.length})</option>
                 {sessionIds.map((id) => (
@@ -953,11 +815,7 @@ const CoveragePanel = ({
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label
                 htmlFor="playback-filter"
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "var(--text-light)",
-                }}
+                style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}
               >
                 Playback Session ID:
               </label>
@@ -966,6 +824,14 @@ const CoveragePanel = ({
                 value={selectedPlaybackSessionId}
                 onChange={(e) => onPlaybackSessionIdChange(e.target.value)}
                 className="filter-select"
+                style={{
+                  padding: "4px 24px 4px 8px",
+                  fontSize: "12px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  background: "white",
+                  cursor: "pointer",
+                }}
               >
                 <option value="All">All ({playbackSessions.length})</option>
                 {playbackSessions.map((id) => (
@@ -1543,32 +1409,25 @@ const GapsPanel = ({
             shown with italic style.
           </p>
           <div className="gaps-controls">
-            <div className="gaps-search-wrap">
-              <input
-                type="text"
-                id="gaps-search"
-                placeholder="Search event or attribute…"
-                value={gapSearch}
-                onChange={(event) => onGapSearchChange(event.target.value)}
-              />
-              {gapSearch && (
-                <button
-                  className="gaps-search-clear"
-                  onClick={() => onGapSearchChange("")}
-                  aria-label="Clear search"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-            <button
-              className={`gaps-filter-chip${hidePartialGaps ? " active" : ""}`}
-              onClick={() => onHidePartialChange(!hidePartialGaps)}
-              aria-pressed={hidePartialGaps}
+            C
+            <input
+              type="text"
+              id="gaps-search"
+              placeholder="Search event or attribute..."
+              value={gapSearch}
+              onChange={(event) => onGapSearchChange(event.target.value)}
+            />
+            <label
+              className="switch small-switch"
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
             >
-              <span className="gaps-filter-dot" />
-              Hide Partial
-            </button>
+              <input
+                type="checkbox"
+                checked={hidePartialGaps}
+                onChange={(event) => onHidePartialChange(event.target.checked)}
+              />
+              <span>Hide Partial</span>
+            </label>
           </div>
           <div
             id="gaps-events-wrapper"
@@ -1753,31 +1612,6 @@ const SessionInfoPanel = ({
 
 export const AnalyticsApp = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(
-    () => localStorage.getItem("theme") === "dark",
-  );
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(true);
-  const [showNrPanel, setShowNrPanel] = useState(false);
-  const [nrAccountId, setNrAccountId] = useState(
-    () => localStorage.getItem("nr_account_id") ?? "",
-  );
-  const [nrApiKey, setNrApiKey] = useState(""); // never persisted — sensitive
-  const [nrQuery, setNrQuery] = useState(
-    () =>
-      localStorage.getItem("nr_query") ??
-      "SELECT * FROM PageAction SINCE 1 hour ago LIMIT 2000",
-  );
-  const [isFetchingNr, setIsFetchingNr] = useState(false);
-  const [nrFetchStatus, setNrFetchStatus] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-  const [nrEventTypes, setNrEventTypes] = useState<string[]>([]);
-  const [addAttrInputs, setAddAttrInputs] = useState<
-    Record<string, { name: string; status: "Y" | "O" }>
-  >({});
-  const [newEventName, setNewEventName] = useState("");
   const [realTimeFile, setRealTimeFile] = useState<File | null>(null);
   const [dictionary, setDictionary] = useState<DictionaryParseResult | null>(
     null,
@@ -1817,25 +1651,17 @@ export const AnalyticsApp = () => {
     >
   >(new Map());
 
-  // Clear page-loading once both dictionary and events are ready
+  // Load bundled dictionary by default
   useEffect(() => {
-    if (dictionary && rawEvents.length > 0) setIsPageLoading(false);
-  }, [dictionary, rawEvents]);
-
-  // Hard-stop the loading overlay after 4 s in case either fetch fails
-  useEffect(() => {
-    const t = setTimeout(() => setIsPageLoading(false), 4000);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Load bundled dictionary by default; skip when user chose to create a new one
-  useEffect(() => {
-    if (selectedDictionary !== "new") loadBundledDictionary();
+    loadBundledDictionary();
   }, [selectedDictionary]);
 
   // Auto-load demo.csv events for testing
   useEffect(() => {
-    fetchTextOrThrow(`${import.meta.env.BASE_URL}dd/demo.csv`, "Failed to fetch demo events")
+    fetchTextOrThrow(
+      `${import.meta.env.BASE_URL}dd/demo.csv`,
+      "Failed to fetch demo events",
+    )
       .then(handleRealTimeContent)
       .catch((error) => console.warn("Demo CSV load skipped:", error));
   }, []);
@@ -1902,94 +1728,7 @@ export const AnalyticsApp = () => {
     [handleRealTimeFile],
   );
 
-  const fetchFromNewRelic = useCallback(
-    async (queryOverride?: string) => {
-      const activeQuery = (queryOverride ?? nrQuery).trim();
-      if (!nrAccountId.trim() || !nrApiKey.trim() || !activeQuery) {
-        setNrFetchStatus({
-          type: "error",
-          message: "Account ID, API Key, and NRQL query are all required.",
-        });
-        return;
-      }
-      setIsFetchingNr(true);
-      setNrFetchStatus(null);
-      const escapedQuery = activeQuery
-        .replace(/\\/g, "\\\\")
-        .replace(/"/g, '\\"');
-      const gql = `{ actor { account(id: ${parseInt(nrAccountId, 10)}) { nrql(query: "${escapedQuery}") { results } } } }`;
-      try {
-        const res = await fetch("/nr-graphql", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Api-Key": nrApiKey.trim(),
-          },
-          body: JSON.stringify({ query: gql }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        const json = await res.json();
-        if (json.errors?.length) throw new Error(json.errors[0].message);
-        const results: Record<string, unknown>[] =
-          json?.data?.actor?.account?.nrql?.results;
-        if (!Array.isArray(results) || results.length === 0)
-          throw new Error(
-            `No results returned. The event type may not exist or have no data in this time range.\n` +
-              `Tip: click "Discover Event Types" to see what's available in account ${nrAccountId}.`,
-          );
-
-        // SHOW EVENT TYPES returns {eventType: "..."} rows — display as selector instead of loading
-        const isEventTypeList = results.length > 0 && "eventType" in results[0];
-        if (isEventTypeList) {
-          const types = results
-            .map((r) => String(r.eventType))
-            .filter(Boolean)
-            .sort();
-          setNrEventTypes(types);
-          localStorage.setItem("nr_account_id", nrAccountId.trim());
-          setNrFetchStatus({
-            type: "success",
-            message: `Found ${types.length} event types. Click one below to load it.`,
-          });
-          setIsFetchingNr(false);
-          return;
-        }
-        setNrEventTypes([]);
-        const headers = Object.keys(results[0]);
-        const csvRows = results.map((row) =>
-          headers
-            .map((h) => {
-              const val = row[h];
-              const str = val === null || val === undefined ? "" : String(val);
-              return str.includes(",") ||
-                str.includes('"') ||
-                str.includes("\n")
-                ? `"${str.replace(/"/g, '""')}"`
-                : str;
-            })
-            .join(","),
-        );
-        handleRealTimeContent([headers.join(","), ...csvRows].join("\n"));
-        localStorage.setItem("nr_account_id", nrAccountId.trim());
-        localStorage.setItem("nr_query", activeQuery);
-        setNrFetchStatus({
-          type: "success",
-          message: `Loaded ${results.length.toLocaleString()} events from New Relic.`,
-        });
-      } catch (err) {
-        setNrFetchStatus({
-          type: "error",
-          message: err instanceof Error ? err.message : String(err),
-        });
-      } finally {
-        setIsFetchingNr(false);
-      }
-    },
-    [nrAccountId, nrApiKey, nrQuery, handleRealTimeContent],
-  );
-
   const loadBundledDictionary = useCallback(async () => {
-    if (selectedDictionary === "new") return;
     try {
       const text = await fetchTextOrThrow(
         `${DEFAULT_DICTIONARY_PATH}${selectedDictionary}.csv`,
@@ -2040,119 +1779,6 @@ export const AnalyticsApp = () => {
       .writeText(playbackSessions.join("\n"))
       .catch(() => alert("Failed to copy playback sessions"));
   }, [playbackSessions]);
-
-  const removeEventFromDict = useCallback(
-    (eventName: string) => {
-      if (!dictionary) return;
-      const drop = (map: typeof dictionary.all) => {
-        const next = { ...map };
-        delete next[eventName];
-        return next;
-      };
-      setDictionary({
-        events: dictionary.events.filter((e) => e !== eventName),
-        all: drop(dictionary.all),
-        web: drop(dictionary.web),
-        mobile: drop(dictionary.mobile),
-        roku: drop(dictionary.roku),
-      });
-      resetAnalysis();
-    },
-    [dictionary, resetAnalysis],
-  );
-
-  const removeAttributeFromEvent = useCallback(
-    (eventName: string, attrName: string) => {
-      if (!dictionary) return;
-      const drop = (map: typeof dictionary.all) => {
-        if (!map[eventName]) return map;
-        const { [attrName]: _, ...rest } = map[eventName];
-        return { ...map, [eventName]: rest };
-      };
-      setDictionary({
-        ...dictionary,
-        all: drop(dictionary.all),
-        web: drop(dictionary.web),
-        mobile: drop(dictionary.mobile),
-        roku: drop(dictionary.roku),
-      });
-      resetAnalysis();
-    },
-    [dictionary, resetAnalysis],
-  );
-
-  const toggleAttributeStatus = useCallback(
-    (eventName: string, attrName: string) => {
-      if (!dictionary) return;
-      const toggle = (map: typeof dictionary.all) => {
-        const attr = map[eventName]?.[attrName];
-        if (!attr) return map;
-        return {
-          ...map,
-          [eventName]: {
-            ...map[eventName],
-            [attrName]: {
-              ...attr,
-              status: attr.status === "Y" ? ("O" as const) : ("Y" as const),
-            },
-          },
-        };
-      };
-      setDictionary({
-        ...dictionary,
-        all: toggle(dictionary.all),
-        web: toggle(dictionary.web),
-        mobile: toggle(dictionary.mobile),
-        roku: toggle(dictionary.roku),
-      });
-      resetAnalysis();
-    },
-    [dictionary, resetAnalysis],
-  );
-
-  const addAttributeToEvent = useCallback(
-    (eventName: string, attrName: string, status: "Y" | "O") => {
-      if (!dictionary || !attrName.trim()) return;
-      const trimmed = attrName.trim();
-      const newAttr = { name: trimmed, status, original: trimmed };
-      const addAttr = (map: typeof dictionary.all) => {
-        if (!map[eventName]) return map;
-        return {
-          ...map,
-          [eventName]: { ...map[eventName], [trimmed]: newAttr },
-        };
-      };
-      setDictionary({
-        ...dictionary,
-        all: addAttr(dictionary.all),
-        web: addAttr(dictionary.web),
-        mobile: addAttr(dictionary.mobile),
-        roku: addAttr(dictionary.roku),
-      });
-      resetAnalysis();
-    },
-    [dictionary, resetAnalysis],
-  );
-
-  const addEventToDict = useCallback(
-    (eventName: string) => {
-      if (!dictionary || !eventName.trim()) return;
-      const trimmed = eventName.trim();
-      if (dictionary.events.includes(trimmed)) return;
-      const addEvent = (map: typeof dictionary.all) => ({
-        ...map,
-        [trimmed]: {},
-      });
-      setDictionary({
-        events: [...dictionary.events, trimmed],
-        all: addEvent(dictionary.all),
-        web: addEvent(dictionary.web),
-        mobile: addEvent(dictionary.mobile),
-        roku: addEvent(dictionary.roku),
-      });
-    },
-    [dictionary],
-  );
 
   // Filter raw events based on session selections for analysis
   const filteredEventsForAnalysis = useMemo(() => {
@@ -2474,15 +2100,6 @@ export const AnalyticsApp = () => {
     selectedPlaybackSessionId,
   ]);
 
-  const handleRunAnalysis = useCallback(() => {
-    setIsAnalyzing(true);
-    // defer heavy work one tick so the loading state renders first
-    setTimeout(() => {
-      runAnalysis();
-      setIsAnalyzing(false);
-    }, 0);
-  }, [runAnalysis]);
-
   const dictLoaded = Boolean(dictionary);
   const canProcess = dictLoaded && rawEvents.length > 0;
   const showPlaybackSessions = playbackSessions.length > 0;
@@ -2570,38 +2187,7 @@ export const AnalyticsApp = () => {
   }, [rawEvents, selectedSessionId, playbackSessions]);
 
   return (
-    <div className="analytics-app" data-theme={isDarkMode ? "dark" : "light"}>
-      {isPageLoading && (
-        <div className="page-loading-overlay" aria-label="Loading">
-          <div className="page-loading-spinner" />
-          <span className="page-loading-text">Loading…</span>
-        </div>
-      )}
-      <header className="app-header">
-        <div className="app-header-inner">
-          <div className="app-brand">
-            <span className="app-brand-icon">◈</span>
-            <div>
-              <div className="app-brand-title">Analytics Validator</div>
-              <div className="app-brand-sub">
-                QA Coverage &amp; Gap Analysis
-              </div>
-            </div>
-          </div>
-          <button
-            className="theme-toggle"
-            onClick={() => {
-              const next = !isDarkMode;
-              setIsDarkMode(next);
-              localStorage.setItem("theme", next ? "dark" : "light");
-            }}
-            aria-label="Toggle dark mode"
-          >
-            {isDarkMode ? "☀️" : "🌙"}
-            <span>{isDarkMode ? "Light" : "Dark"}</span>
-          </button>
-        </div>
-      </header>
+    <div className="analytics-app">
       <div className="app-container">
         <nav className="tabs" aria-label="Main Views">
           <button
@@ -2623,24 +2209,7 @@ export const AnalyticsApp = () => {
         </nav>
 
         <section className="card fade-in" id="input-files-section">
-          <h2
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>Input Configuration</span>
-            <button
-              type="button"
-              className={`nr-toggle-btn${showNrPanel ? " active" : ""}`}
-              onClick={() => setShowNrPanel((v) => !v)}
-              title="Fetch data directly from New Relic via API"
-            >
-              <span className="nr-toggle-icon">⚡</span>
-              {showNrPanel ? "Hide API Connector" : "New Relic API"}
-            </button>
-          </h2>
+          <h2>Input Configuration</h2>
           <div className="card-header-line"></div>
 
           <div className="input-config-stack">
@@ -2654,24 +2223,12 @@ export const AnalyticsApp = () => {
                   id="data-dictionary-select"
                   className="fancy-select"
                   value={selectedDictionary}
-                  onChange={(event) => {
-                    const val = event.target.value;
-                    setSelectedDictionary(val);
-                    if (val === "new") {
-                      setDictionary({
-                        events: [],
-                        all: {},
-                        web: {},
-                        mobile: {},
-                        roku: {},
-                      });
-                      resetAnalysis();
-                      setIsAttributesExpanded(true);
-                    }
-                  }}
+                  onChange={(event) =>
+                    setSelectedDictionary(event.target.value)
+                  }
                 >
                   <option value="v1.12-gray-media">Default</option>
-                  <option value="new">Create New Dictionary</option>
+                  <option value="v1.12-amd-comedytv">AMD ComedyTV v1.12</option>
                 </select>
               </div>
             </div>
@@ -2744,171 +2301,17 @@ export const AnalyticsApp = () => {
             <div className="input-group">
               <div className="process-section">
                 <button
-                  onClick={handleRunAnalysis}
-                  disabled={!canProcess || isAnalyzing}
+                  onClick={runAnalysis}
+                  disabled={!canProcess}
                   id="btn-process"
-                  className={`primary-large${isAnalyzing ? " btn-loading" : ""}`}
+                  className="primary-large"
                 >
-                  {isAnalyzing ? (
-                    <>
-                      <span className="btn-spinner" />
-                      Analyzing…
-                    </>
-                  ) : (
-                    "Run Analysis"
-                  )}
+                  Run Analysis
                 </button>
               </div>
             </div>
           </div>
         </section>
-
-        {/* New Relic API connector panel */}
-        {showNrPanel && (
-          <section className="card fade-in" id="nr-api-section">
-            <h2>New Relic API Connector</h2>
-            <div className="card-header-line" />
-            <div className="nr-info-box">
-              <strong>What you need:</strong>
-              <ul className="nr-info-list">
-                <li>
-                  <span className="nr-info-key">Account ID</span> — numeric ID
-                  from your NR URL or <em>Account settings › General</em>
-                </li>
-                <li>
-                  <span className="nr-info-key">User API Key</span> — create at{" "}
-                  <em>Profile › API keys</em> (type: User, starts with{" "}
-                  <code>NRAK-</code>). Needs <em>Query Insights events</em>{" "}
-                  permission.
-                </li>
-                <li>
-                  <span className="nr-info-key">NRQL Query</span> — must return
-                  rows that include an action/event name column (e.g.{" "}
-                  <code>actionName</code>, <code>name</code>). Use{" "}
-                  <code>SELECT *</code> to capture all attributes.
-                </li>
-              </ul>
-              <p className="nr-info-note">
-                ⚠️ The API key is never stored — it is cleared when you refresh
-                the page.
-              </p>
-              <p className="nr-info-note">
-                🔄 If you see a CORS error, stop the dev server and restart it
-                with <code>npm run dev</code>.
-              </p>
-            </div>
-            <div className="nr-form">
-              <div className="nr-field">
-                <label className="nr-label" htmlFor="nr-account-id">
-                  Account ID
-                </label>
-                <input
-                  id="nr-account-id"
-                  type="text"
-                  className="nr-input"
-                  placeholder="e.g. 3759601"
-                  value={nrAccountId}
-                  onChange={(e) => setNrAccountId(e.target.value)}
-                />
-              </div>
-              <div className="nr-field">
-                <label className="nr-label" htmlFor="nr-api-key">
-                  User API Key
-                </label>
-                <input
-                  id="nr-api-key"
-                  type="password"
-                  className="nr-input"
-                  placeholder="NRAK-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-                  value={nrApiKey}
-                  onChange={(e) => setNrApiKey(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
-              <div className="nr-field nr-field-wide">
-                <label className="nr-label" htmlFor="nr-query">
-                  NRQL Query
-                </label>
-                <textarea
-                  id="nr-query"
-                  className="nr-textarea"
-                  rows={3}
-                  placeholder="SELECT * FROM PageAction SINCE 1 hour ago LIMIT 2000"
-                  value={nrQuery}
-                  onChange={(e) => setNrQuery(e.target.value)}
-                />
-              </div>
-              <div className="nr-actions">
-                <button
-                  type="button"
-                  className={`primary-large${isFetchingNr ? " btn-loading" : ""}`}
-                  onClick={() => fetchFromNewRelic()}
-                  disabled={
-                    isFetchingNr ||
-                    !nrAccountId.trim() ||
-                    !nrApiKey.trim() ||
-                    !nrQuery.trim()
-                  }
-                >
-                  {isFetchingNr ? (
-                    <>
-                      <span className="btn-spinner" />
-                      Fetching…
-                    </>
-                  ) : (
-                    "⚡ Fetch & Load"
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  title="Run SHOW EVENT TYPES to discover which event types exist in your account"
-                  onClick={() =>
-                    setNrQuery("SHOW EVENT TYPES SINCE 1 week ago")
-                  }
-                  disabled={isFetchingNr}
-                >
-                  Discover Event Types
-                </button>
-                {nrFetchStatus && (
-                  <span
-                    className={`nr-status nr-status-${nrFetchStatus.type}`}
-                    style={{ whiteSpace: "pre-line" }}
-                  >
-                    {nrFetchStatus.type === "success" ? "✓" : "✕"}{" "}
-                    {nrFetchStatus.message}
-                  </span>
-                )}
-              </div>
-              {nrEventTypes.length > 0 && (
-                <div className="nr-event-types">
-                  <p className="nr-event-types-label">
-                    Select an event type to load:
-                  </p>
-                  <div className="nr-event-type-chips">
-                    {nrEventTypes.map((et) => (
-                      <button
-                        key={et}
-                        type="button"
-                        className="nr-event-type-chip"
-                        onClick={() => {
-                          const q = `SELECT * FROM ${et} SINCE 1 week ago LIMIT 2000`;
-                          setNrQuery(q);
-                          setNrEventTypes([]);
-                          setNrFetchStatus(null);
-                          fetchFromNewRelic(q);
-                        }}
-                        title={`Load: SELECT * FROM ${et} SINCE 1 day ago LIMIT 2000`}
-                      >
-                        {et}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
 
         {dictLoaded && (
           <section className="card fade-in" id="attributes-per-event-section">
@@ -2935,200 +2338,72 @@ export const AnalyticsApp = () => {
             </p>
             {isAttributesExpanded && (
               <>
-                <div className="attr-meta-bar">
-                  <span className="attr-meta-pill">
-                    <span className="attr-meta-label">Platform</span>
-                    <span className="attr-meta-value">
-                      {selectedDashboardPlatform === "All"
-                        ? "All Platforms"
-                        : selectedDashboardPlatform}
+                <div
+                  className="controls-inline"
+                  style={{ marginBottom: "15px" }}
+                >
+                  <div className="filter-group">
+                    <label
+                      htmlFor="platform-view-select"
+                      style={{ fontWeight: 600 }}
+                    >
+                      Platform:
+                    </label>
+                    <select
+                      id="platform-view-select"
+                      value={selectedDashboardPlatform}
+                      onChange={(event) =>
+                        setSelectedDashboardPlatform(
+                          event.target.value as "All" | Platform,
+                        )
+                      }
+                    >
+                      <option value="All">All</option>
+                      <option value="Web">Web</option>
+                      <option value="Mobile">Mobile</option>
+                      <option value="Roku">Roku</option>
+                    </select>
+                    <span style={{ color: "#555", marginLeft: "8px" }}>
+                      {platformMeta}
                     </span>
-                  </span>
-                  {platformMeta && (
-                    <span className="attr-meta-pill">
-                      <span className="attr-meta-value">
-                        {platformMeta.replace(/^[^:]+:\s*/, "")}
-                      </span>
-                    </span>
-                  )}
+                  </div>
                 </div>
                 <div id="attributes-per-event">
-                  {/* Add new event form */}
-                  <div className="add-event-row">
-                    <input
-                      type="text"
-                      className="add-event-input"
-                      placeholder="New event name…"
-                      value={newEventName}
-                      onChange={(e) => setNewEventName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && newEventName.trim()) {
-                          addEventToDict(newEventName);
-                          setNewEventName("");
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="add-event-btn"
-                      disabled={!newEventName.trim()}
-                      onClick={() => {
-                        addEventToDict(newEventName);
-                        setNewEventName("");
-                      }}
-                    >
-                      + Add Event
-                    </button>
-                  </div>
                   {attributeGroups.map((group) => (
                     <div
                       key={group.eventName}
                       className="event-attributes-group"
-                      style={{ marginBottom: "20px" }}
+                      style={{ marginBottom: "24px" }}
                     >
-                      <div className="event-group-header">
-                        <h3 style={{ margin: 0, fontSize: "14px" }}>
-                          {group.eventName}
-                          <span className="event-group-meta">
-                            {group.requiredCount} required ·{" "}
-                            {group.optionalCount} optional
-                          </span>
-                        </h3>
-                        <button
-                          type="button"
-                          className="event-remove-btn"
-                          onClick={() => removeEventFromDict(group.eventName)}
-                          title={`Remove "${group.eventName}" from dictionary`}
-                        >
-                          Remove event
-                        </button>
-                      </div>
+                      <h3 style={{ marginBottom: "8px", fontSize: "16px" }}>
+                        {group.eventName} — {group.requiredCount} required,{" "}
+                        {group.optionalCount} optional
+                      </h3>
                       <div
                         style={{
                           display: "flex",
                           flexWrap: "wrap",
-                          gap: "5px",
-                          marginTop: "8px",
+                          gap: "6px",
                         }}
                       >
                         {group.attributes.map((attribute) => (
                           <span
                             key={attribute.name}
-                            className={`attr-edit-chip ${attribute.status === "O" ? "opt" : "req"}`}
+                            className={`badge ${attribute.status === "O" ? "opt" : "req"}`}
+                            style={{
+                              fontSize: "11px",
+                              opacity: attribute.status === "O" ? 0.75 : 1,
+                            }}
+                            title={
+                              attribute.status === "O"
+                                ? "Optional attribute"
+                                : "Required attribute"
+                            }
                           >
-                            <button
-                              type="button"
-                              className="attr-name-btn"
-                              onClick={() =>
-                                toggleAttributeStatus(
-                                  group.eventName,
-                                  attribute.name,
-                                )
-                              }
-                              title={`Click to toggle: currently ${attribute.status === "O" ? "Optional" : "Required"}`}
-                            >
-                              {attribute.name}
-                              <span className="attr-status-tag">
-                                {attribute.status === "O" ? "O" : "R"}
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              className="attr-remove-btn"
-                              onClick={() =>
-                                removeAttributeFromEvent(
-                                  group.eventName,
-                                  attribute.name,
-                                )
-                              }
-                              title={`Remove "${attribute.name}"`}
-                            >
-                              ×
-                            </button>
+                            {attribute.name}
                           </span>
                         ))}
                       </div>
-                      {/* Inline add-attribute form */}
-                      {(() => {
-                        const addState = addAttrInputs[group.eventName] ?? {
-                          name: "",
-                          status: "Y" as const,
-                        };
-                        return (
-                          <div className="add-attr-row">
-                            <input
-                              type="text"
-                              className="add-attr-input"
-                              placeholder="Attribute name…"
-                              value={addState.name}
-                              onChange={(e) =>
-                                setAddAttrInputs((prev) => ({
-                                  ...prev,
-                                  [group.eventName]: {
-                                    ...addState,
-                                    name: e.target.value,
-                                  },
-                                }))
-                              }
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && addState.name.trim()) {
-                                  addAttributeToEvent(
-                                    group.eventName,
-                                    addState.name,
-                                    addState.status,
-                                  );
-                                  setAddAttrInputs((prev) => ({
-                                    ...prev,
-                                    [group.eventName]: {
-                                      name: "",
-                                      status: addState.status,
-                                    },
-                                  }));
-                                }
-                              }}
-                            />
-                            <button
-                              type="button"
-                              className={`add-attr-status-btn ${addState.status === "Y" ? "req" : "opt"}`}
-                              onClick={() =>
-                                setAddAttrInputs((prev) => ({
-                                  ...prev,
-                                  [group.eventName]: {
-                                    ...addState,
-                                    status: addState.status === "Y" ? "O" : "Y",
-                                  },
-                                }))
-                              }
-                              title="Toggle Required / Optional"
-                            >
-                              {addState.status === "Y"
-                                ? "Required"
-                                : "Optional"}
-                            </button>
-                            <button
-                              type="button"
-                              className="add-attr-submit-btn"
-                              disabled={!addState.name.trim()}
-                              onClick={() => {
-                                addAttributeToEvent(
-                                  group.eventName,
-                                  addState.name,
-                                  addState.status,
-                                );
-                                setAddAttrInputs((prev) => ({
-                                  ...prev,
-                                  [group.eventName]: {
-                                    name: "",
-                                    status: addState.status,
-                                  },
-                                }));
-                              }}
-                            >
-                              + Add
-                            </button>
-                          </div>
-                        );
-                      })()}
                     </div>
                   ))}
                 </div>
@@ -3187,4 +2462,4 @@ export const AnalyticsApp = () => {
       </div>
     </div>
   );
-};;;;
+};

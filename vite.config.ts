@@ -12,7 +12,6 @@ export default defineConfig({
         secure: true,
         rewrite: (path) => path.replace(/^\/nr-graphql/, "/graphql"),
         configure: (proxy) => {
-          // Ensure custom headers (Api-Key) are forwarded to NR
           proxy.on("proxyReq", (proxyReq, req) => {
             const apiKey = req.headers["api-key"];
             if (apiKey) proxyReq.setHeader("Api-Key", apiKey);

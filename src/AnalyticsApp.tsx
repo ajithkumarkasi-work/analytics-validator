@@ -15,6 +15,7 @@ import type {
   AttributeDescriptor,
   CoverageRow,
   DictPerEventMap,
+  GapAttribute,
   GapData,
   Platform,
   RawEvent,
@@ -29,6 +30,10 @@ import {
 import { AttributeTooltip } from "./components/AttributeTooltip";
 
 const DEFAULT_DICTIONARY_PATH = `${import.meta.env.BASE_URL}dd/`;
+const CREATE_NEW_DICTIONARY_VALUE = "__create_new_dictionary__";
+const NR_PANEL_LOCK_MESSAGE =
+  "Manual upload and Run Validation are locked while New Relic API is open.";
+const MOBILE_WARNING_BREAKPOINT = 768;
 
 const readFileText = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -107,20 +112,6 @@ const fetchTextOrThrow = async (path: string, errorPrefix: string) => {
     throw new Error(`${errorPrefix}: ${response.status}`);
   }
   return response.text();
-};
-
-const formatPlatformMeta = (
-  dictionary: DictionaryParseResult | null,
-  platform: "All" | Platform,
-) => {
-  if (!dictionary) return "";
-  const mapped = getDictionaryForPlatform(dictionary, platform);
-  const events = Object.keys(mapped).length;
-  const attributes = Object.values(mapped).reduce(
-    (total, attrs) => total + Object.keys(attrs).length,
-    0,
-  );
-  return `${platformLabel(platform)}: ${events} events, ${attributes} attributes`;
 };
 
 const buildAttributeGroups = (
@@ -513,6 +504,63 @@ const CoveragePanel = ({
 
   const hasCoverage = analysisPerformed && coverageRows.length > 0;
   const hasExtraAttributes = filteredExtraAttributes.length > 0;
+
+  const summaryStats = useMemo(() => {
+    if (!hasCoverage) return null;
+    let present = 0,
+      partial = 0,
+      missing = 0,
+      optional = 0;
+
+    dictionaryAttributes.forEach((attr) => {
+      const normalizedAttr = normalizeKeyValue(attr);
+      let attrIsOptional = false;
+      coverageRows.forEach((row) => {
+        const dictAttr = selectedDictionaryMap[row.eventName]?.[attr];
+        if (!dictAttr) return;
+        if (dictAttr.status === "O") {
+          attrIsOptional = true;
+          return;
+        }
+        const stats = presenceStatsCache.get(
+          `${row.eventName}:${normalizedAttr}`,
+        );
+        const letter = stats?.letter ?? "N";
+        if (letter === "Y") present++;
+        else if (letter === "P") partial++;
+        else missing++;
+      });
+      if (attrIsOptional) optional++;
+    });
+
+    let extra = 0;
+    extraAttributes.forEach((attr) => {
+      const normalizedAttr = normalizeKeyValue(attr);
+      coverageRows.forEach((row) => {
+        const stats = presenceStatsCache.get(
+          `${row.eventName}:${normalizedAttr}`,
+        );
+        if (stats && stats.presentCount > 0) extra++;
+      });
+    });
+
+    return {
+      present,
+      partial,
+      missing,
+      optional,
+      extra,
+      total: present + partial + missing,
+    };
+  }, [
+    hasCoverage,
+    dictionaryAttributes,
+    extraAttributes,
+    coverageRows,
+    selectedDictionaryMap,
+    presenceStatsCache,
+  ]);
+
   const focusedAttribute = attributeQuery
     ? (filteredDictionaryAttributes[0] ?? filteredExtraAttributes[0] ?? null)
     : null;
@@ -590,8 +638,8 @@ const CoveragePanel = ({
 
     if (!dictionaryAttribute) {
       const emptyStyle: CSSProperties = {
-        background: "#f9f9f9",
-        color: "#666",
+        background: "var(--cell-empty-bg)",
+        color: "var(--cell-empty-color)",
       };
       const title = total
         ? `Not in dictionary for this event (${presentCount}/${total})`
@@ -610,8 +658,8 @@ const CoveragePanel = ({
 
     if (dictionaryAttribute.status === "O") {
       const optionalStyle: CSSProperties = {
-        background: "#374151",
-        color: "#fff",
+        background: "var(--cell-o-bg)",
+        color: "var(--cell-o-color)",
         fontWeight: 600,
       };
       return {
@@ -623,18 +671,22 @@ const CoveragePanel = ({
       };
     }
 
-    let background: string;
-    if (letter === "Y") {
-      background = "#def5d8";
-    } else if (letter === "P") {
-      background = "#fff4c2";
-    } else {
-      background = "#f8d7da";
-    }
+    const bgVar =
+      letter === "Y"
+        ? "var(--cell-y-bg)"
+        : letter === "P"
+          ? "var(--cell-p-bg)"
+          : "var(--cell-n-bg)";
+    const colorVar =
+      letter === "Y"
+        ? "var(--cell-y-color)"
+        : letter === "P"
+          ? "var(--cell-p-color)"
+          : "var(--cell-n-color)";
 
     const requiredStyle: CSSProperties = {
-      background,
-      color: "#0f172a",
+      background: bgVar,
+      color: colorVar,
       fontWeight: 600,
     };
 
@@ -665,13 +717,13 @@ const CoveragePanel = ({
       : `Extra absent (0/${total})`;
     const style: CSSProperties = hasValue
       ? {
-          background: "#d6ecff",
-          color: "#1e40af",
+          background: "var(--cell-a-bg)",
+          color: "var(--cell-a-color)",
           fontWeight: 600,
         }
       : {
-          background: "#f0f8ff",
-          color: "#475569",
+          background: "var(--cell-empty-bg)",
+          color: "var(--cell-empty-color)",
           fontWeight: 400,
         };
 
@@ -771,6 +823,87 @@ const CoveragePanel = ({
           </div>
           <div className="card-header-line"></div>
 
+          {/* Dashboard summary stats */}
+          {summaryStats && (
+            <div className="ds-summary">
+              <div className="ds-cards">
+                <div className="ds-card ds-present">
+                  <div className="ds-value">{summaryStats.present}</div>
+                  <div className="ds-label">Present</div>
+                </div>
+                <div className="ds-card ds-partial">
+                  <div className="ds-value">{summaryStats.partial}</div>
+                  <div className="ds-label">Partial</div>
+                </div>
+                <div className="ds-card ds-missing">
+                  <div className="ds-value">{summaryStats.missing}</div>
+                  <div className="ds-label">Missing</div>
+                </div>
+                <div className="ds-card ds-optional">
+                  <div className="ds-value">{summaryStats.optional}</div>
+                  <div className="ds-label">Optional</div>
+                </div>
+                <div className="ds-card ds-extra">
+                  <div className="ds-value">{summaryStats.extra}</div>
+                  <div className="ds-label">Additional</div>
+                </div>
+              </div>
+              {summaryStats.total > 0 && (
+                <div className="ds-bar-wrap">
+                  <div className="ds-bar" title="Coverage breakdown">
+                    <div
+                      className="ds-seg ds-seg-present"
+                      style={{
+                        width: `${(summaryStats.present / summaryStats.total) * 100}%`,
+                      }}
+                      title={`Present: ${summaryStats.present} (${Math.round((summaryStats.present / summaryStats.total) * 100)}%)`}
+                    />
+                    <div
+                      className="ds-seg ds-seg-partial"
+                      style={{
+                        width: `${(summaryStats.partial / summaryStats.total) * 100}%`,
+                      }}
+                      title={`Partial: ${summaryStats.partial} (${Math.round((summaryStats.partial / summaryStats.total) * 100)}%)`}
+                    />
+                    <div
+                      className="ds-seg ds-seg-missing"
+                      style={{
+                        width: `${(summaryStats.missing / summaryStats.total) * 100}%`,
+                      }}
+                      title={`Missing: ${summaryStats.missing} (${Math.round((summaryStats.missing / summaryStats.total) * 100)}%)`}
+                    />
+                  </div>
+                  <div className="ds-bar-legend">
+                    <span className="ds-leg-item ds-leg-present">
+                      <i />
+                      Present{" "}
+                      {Math.round(
+                        (summaryStats.present / summaryStats.total) * 100,
+                      )}
+                      %
+                    </span>
+                    <span className="ds-leg-item ds-leg-partial">
+                      <i />
+                      Partial{" "}
+                      {Math.round(
+                        (summaryStats.partial / summaryStats.total) * 100,
+                      )}
+                      %
+                    </span>
+                    <span className="ds-leg-item ds-leg-missing">
+                      <i />
+                      Missing{" "}
+                      {Math.round(
+                        (summaryStats.missing / summaryStats.total) * 100,
+                      )}
+                      %
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Session Filters - Always show for testing */}
           <div
             className="session-filters"
@@ -785,7 +918,11 @@ const CoveragePanel = ({
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label
                 htmlFor="session-filter"
-                style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "var(--text-light)",
+                }}
               >
                 Session ID:
               </label>
@@ -794,14 +931,6 @@ const CoveragePanel = ({
                 value={selectedSessionId}
                 onChange={(e) => onSessionIdChange(e.target.value)}
                 className="filter-select"
-                style={{
-                  padding: "4px 24px 4px 8px",
-                  fontSize: "12px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
-                  background: "white",
-                  cursor: "pointer",
-                }}
               >
                 <option value="All">All ({sessionIds.length})</option>
                 {sessionIds.map((id) => (
@@ -815,7 +944,11 @@ const CoveragePanel = ({
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label
                 htmlFor="playback-filter"
-                style={{ fontSize: "12px", fontWeight: 500, color: "#64748b" }}
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "var(--text-light)",
+                }}
               >
                 Playback Session ID:
               </label>
@@ -824,14 +957,6 @@ const CoveragePanel = ({
                 value={selectedPlaybackSessionId}
                 onChange={(e) => onPlaybackSessionIdChange(e.target.value)}
                 className="filter-select"
-                style={{
-                  padding: "4px 24px 4px 8px",
-                  fontSize: "12px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
-                  background: "white",
-                  cursor: "pointer",
-                }}
               >
                 <option value="All">All ({playbackSessions.length})</option>
                 {playbackSessions.map((id) => (
@@ -1289,7 +1414,7 @@ type GapsPanelProps = {
   onHidePartialChange: (value: boolean) => void;
   summary: GapSummary;
   dictionary: DictionaryParseResult | null;
-  rawEvents: RawEvent[];
+  analyzedEvents: RawEvent[];
 };
 
 const GapsPanel = ({
@@ -1304,16 +1429,17 @@ const GapsPanel = ({
   onHidePartialChange,
   summary,
   dictionary,
-  rawEvents,
+  analyzedEvents,
 }: GapsPanelProps) => {
   // Calculate missing events (events in dictionary but not in raw data)
   const missingEvents = useMemo(() => {
-    if (!dictionary || !rawEvents || rawEvents.length === 0) return [];
+    if (!dictionary || !analyzedEvents || analyzedEvents.length === 0)
+      return [];
 
     const normalizeKey = (value: string) =>
       value.toLowerCase().replace(/[^a-z0-9]/g, "");
     const rawEventNames = new Set(
-      rawEvents.map((e) => normalizeKey(e.eventName || "")),
+      analyzedEvents.map((e) => normalizeKey(e.eventName || "")),
     );
     const dictEventNames = new Set<string>();
 
@@ -1326,7 +1452,76 @@ const GapsPanel = ({
     });
 
     return Array.from(dictEventNames).sort((a, b) => a.localeCompare(b));
-  }, [dictionary, rawEvents]);
+  }, [dictionary, analyzedEvents]);
+
+  const displayGapRows = useMemo(() => {
+    const mergeAttributes = (
+      current: GapAttribute[],
+      incoming: GapAttribute[],
+    ) => {
+      const merged = new Map<string, GapAttribute>();
+
+      [...current, ...incoming].forEach((attribute) => {
+        const previous = merged.get(attribute.name);
+        if (!previous) {
+          merged.set(attribute.name, { ...attribute });
+          return;
+        }
+
+        merged.set(attribute.name, {
+          name: attribute.name,
+          optional: previous.optional || attribute.optional,
+          present: Math.max(previous.present, attribute.present),
+          total: Math.max(previous.total, attribute.total),
+        });
+      });
+
+      return Array.from(merged.values()).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+    };
+
+    const byEvent = new Map<string, GapData>();
+
+    filteredGapRows.forEach((gap) => {
+      const existing = byEvent.get(gap.eventName);
+      if (!existing) {
+        byEvent.set(gap.eventName, {
+          ...gap,
+          missing: [...gap.missing],
+          partial: [...gap.partial],
+        });
+        return;
+      }
+
+      byEvent.set(gap.eventName, {
+        ...existing,
+        totalDict: Math.max(existing.totalDict, gap.totalDict),
+        totalRealTime: Math.max(existing.totalRealTime, gap.totalRealTime),
+        missing: mergeAttributes(existing.missing, gap.missing),
+        partial: mergeAttributes(existing.partial, gap.partial),
+      });
+    });
+
+    return Array.from(byEvent.values()).sort((a, b) =>
+      a.eventName.localeCompare(b.eventName),
+    );
+  }, [filteredGapRows]);
+
+  const displayGapSummary = useMemo(
+    () => ({
+      events: displayGapRows.length,
+      missing: displayGapRows.reduce(
+        (total, gap) => total + gap.missing.length,
+        0,
+      ),
+      partial: displayGapRows.reduce(
+        (total, gap) => total + gap.partial.length,
+        0,
+      ),
+    }),
+    [displayGapRows],
+  );
 
   return (
     <div
@@ -1350,7 +1545,7 @@ const GapsPanel = ({
               className="faded"
               style={{ fontSize: "12px", fontWeight: 500 }}
             >
-              ({filteredGapRows.length} events)
+              ({displayGapRows.length} events)
             </span>
           </h2>
           <div className="card-header-line"></div>
@@ -1359,8 +1554,8 @@ const GapsPanel = ({
             className="faded"
             style={{ fontSize: "12px", margin: "4px 0 12px" }}
           >
-            {summary.events > 0
-              ? `${platformLabel(activePlatform)} | ${summary.events} events • ${summary.missing} required missing • ${summary.partial} partial`
+            {displayGapSummary.events > 0
+              ? `${platformLabel(activePlatform)} | ${displayGapSummary.events} events • ${displayGapSummary.missing} required missing • ${displayGapSummary.partial} partial`
               : `No gaps detected for ${platformLabel(activePlatform)}.`}
           </div>
 
@@ -1409,41 +1604,45 @@ const GapsPanel = ({
             shown with italic style.
           </p>
           <div className="gaps-controls">
-            C
-            <input
-              type="text"
-              id="gaps-search"
-              placeholder="Search event or attribute..."
-              value={gapSearch}
-              onChange={(event) => onGapSearchChange(event.target.value)}
-            />
-            <label
-              className="switch small-switch"
-              style={{ display: "flex", alignItems: "center", gap: "6px" }}
-            >
+            <div className="gaps-search-wrap">
               <input
-                type="checkbox"
-                checked={hidePartialGaps}
-                onChange={(event) => onHidePartialChange(event.target.checked)}
+                type="text"
+                id="gaps-search"
+                placeholder="Search event or attribute…"
+                value={gapSearch}
+                onChange={(event) => onGapSearchChange(event.target.value)}
               />
-              <span>Hide Partial</span>
-            </label>
+              {gapSearch && (
+                <button
+                  className="gaps-search-clear"
+                  onClick={() => onGapSearchChange("")}
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <button
+              className={`gaps-filter-chip${hidePartialGaps ? " active" : ""}`}
+              onClick={() => onHidePartialChange(!hidePartialGaps)}
+              aria-pressed={hidePartialGaps}
+            >
+              <span className="gaps-filter-dot" />
+              Hide Partial
+            </button>
           </div>
           <div
             id="gaps-events-wrapper"
             className="gaps-events-list"
             aria-live="polite"
           >
-            {filteredGapRows.map((gap) => {
+            {displayGapRows.map((gap) => {
               const visiblePartial = hidePartialGaps ? [] : gap.partial;
               const hasMissing = gap.missing.length > 0;
               const hasPartial = visiblePartial.length > 0;
 
               return (
-                <div
-                  key={`${gap.platform}-${gap.eventName}`}
-                  className="gap-event-card"
-                >
+                <div key={gap.eventName} className="gap-event-card">
                   <div className="gap-event-header">
                     <h3 className="gap-event-title">{gap.eventName}</h3>
                   </div>
@@ -1612,6 +1811,31 @@ const SessionInfoPanel = ({
 
 export const AnalyticsApp = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    () => localStorage.getItem("theme") === "dark",
+  );
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [showNrPanel, setShowNrPanel] = useState(false);
+  const [nrAccountId, setNrAccountId] = useState(
+    () => localStorage.getItem("nr_account_id") ?? "",
+  );
+  const [nrApiKey, setNrApiKey] = useState(""); // never persisted — sensitive
+  const [nrQuery, setNrQuery] = useState(
+    () =>
+      localStorage.getItem("nr_query") ??
+      "SELECT * FROM PageAction SINCE 1 hour ago LIMIT 2000",
+  );
+  const [isFetchingNr, setIsFetchingNr] = useState(false);
+  const [nrFetchStatus, setNrFetchStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [nrEventTypes, setNrEventTypes] = useState<string[]>([]);
+  const [addAttrInputs, setAddAttrInputs] = useState<
+    Record<string, { name: string; status: "Y" | "O" }>
+  >({});
+  const [newEventName, setNewEventName] = useState("");
   const [realTimeFile, setRealTimeFile] = useState<File | null>(null);
   const [dictionary, setDictionary] = useState<DictionaryParseResult | null>(
     null,
@@ -1629,6 +1853,15 @@ export const AnalyticsApp = () => {
   >("All");
   const [selectedDictionary, setSelectedDictionary] =
     useState<string>("default");
+  const [newDictionaryName, setNewDictionaryName] = useState(
+    "Untitled Dictionary",
+  );
+  const [customDictionaries, setCustomDictionaries] = useState<
+    Array<{ id: string; name: string; data: DictionaryParseResult }>
+  >([]);
+  const [loadedDictionaryKey, setLoadedDictionaryKey] = useState<string | null>(
+    null,
+  );
   const [selectedSessionId, setSelectedSessionId] = useState<string>("All");
   const [selectedPlaybackSessionId, setSelectedPlaybackSessionId] =
     useState<string>("All");
@@ -1636,11 +1869,15 @@ export const AnalyticsApp = () => {
   const [eventSearch, setEventSearch] = useState("");
   const [gapSearch, setGapSearch] = useState("");
   const [hidePartialGaps, setHidePartialGaps] = useState(false);
-  const [isAttributesExpanded, setIsAttributesExpanded] = useState(false);
   const [analysisPerformed, setAnalysisPerformed] = useState(false);
   const [isSessionInfoOpen, setIsSessionInfoOpen] = useState(false);
+  const [uiToastMessage, setUiToastMessage] = useState<string | null>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => window.innerWidth < MOBILE_WARNING_BREAKPOINT,
+  );
 
   const realTimeInputRef = useRef<HTMLInputElement>(null);
+  const shouldAutoRunNrAnalysisRef = useRef(false);
   const analysisCacheRef = useRef<
     Map<
       string,
@@ -1650,11 +1887,50 @@ export const AnalyticsApp = () => {
       }
     >
   >(new Map());
+  const uiToastTimerRef = useRef<number | null>(null);
 
-  // Load bundled dictionary by default
+  const showUiToast = useCallback((message: string) => {
+    if (uiToastTimerRef.current) {
+      window.clearTimeout(uiToastTimerRef.current);
+    }
+    setUiToastMessage(message);
+    uiToastTimerRef.current = window.setTimeout(() => {
+      setUiToastMessage(null);
+      uiToastTimerRef.current = null;
+    }, 2600);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (uiToastTimerRef.current) {
+        window.clearTimeout(uiToastTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  // Clear page-loading once both dictionary and events are ready
   useEffect(() => {
-    loadBundledDictionary();
-  }, [selectedDictionary]);
+    if (dictionary && rawEvents.length > 0) setIsPageLoading(false);
+  }, [dictionary, rawEvents]);
+
+  // Hard-stop the loading overlay after 4 s in case either fetch fails
+  useEffect(() => {
+    const t = setTimeout(() => setIsPageLoading(false), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileViewport(window.innerWidth < MOBILE_WARNING_BREAKPOINT);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isCreatingNewDictionary =
+    selectedDictionary === CREATE_NEW_DICTIONARY_VALUE;
 
   // Auto-load demo.csv events for testing
   useEffect(() => {
@@ -1678,6 +1954,7 @@ export const AnalyticsApp = () => {
       try {
         const parsed = parseDictionary(text);
         setDictionary(parsed);
+        setLoadedDictionaryKey("default");
         resetAnalysis();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -1722,24 +1999,201 @@ export const AnalyticsApp = () => {
     (event: DragEvent<HTMLButtonElement>) => {
       event.preventDefault();
       setIsRealTimeDragging(false);
+      if (showNrPanel) {
+        showUiToast(NR_PANEL_LOCK_MESSAGE);
+        return;
+      }
       const file = fileFromDataTransfer(event.dataTransfer);
       file && handleRealTimeFile(file);
     },
-    [handleRealTimeFile],
+    [handleRealTimeFile, showNrPanel, showUiToast],
+  );
+
+  const fetchFromNewRelic = useCallback(
+    async (queryOverride?: string) => {
+      const activeQuery = (queryOverride ?? nrQuery).trim();
+      if (!nrAccountId.trim() || !nrApiKey.trim() || !activeQuery) {
+        setNrFetchStatus({
+          type: "error",
+          message: "Account ID, API Key, and NRQL query are all required.",
+        });
+        return;
+      }
+      setIsFetchingNr(true);
+      setNrFetchStatus(null);
+      const escapedQuery = activeQuery
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"');
+      const gql = `{ actor { account(id: ${parseInt(nrAccountId, 10)}) { nrql(query: "${escapedQuery}") { results } } } }`;
+      try {
+        const res = await fetch("/nr-graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Api-Key": nrApiKey.trim(),
+          },
+          body: JSON.stringify({ query: gql }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const json = await res.json();
+        if (json.errors?.length) throw new Error(json.errors[0].message);
+        const results: Record<string, unknown>[] =
+          json?.data?.actor?.account?.nrql?.results;
+        if (!Array.isArray(results) || results.length === 0)
+          throw new Error(
+            `No results returned. The event type may not exist or have no data in this time range.\n` +
+              `Tip: click "Discover Event Types" to see what's available in account ${nrAccountId}.`,
+          );
+
+        // SHOW EVENT TYPES returns {eventType: "..."} rows — display as selector instead of loading
+        const isEventTypeList = results.length > 0 && "eventType" in results[0];
+        if (isEventTypeList) {
+          const types = results
+            .map((r) => String(r.eventType))
+            .filter(Boolean)
+            .sort();
+          setNrEventTypes(types);
+          localStorage.setItem("nr_account_id", nrAccountId.trim());
+          setNrFetchStatus({
+            type: "success",
+            message: `Found ${types.length} event types. Click one below to load it.`,
+          });
+          setIsFetchingNr(false);
+          return;
+        }
+        setNrEventTypes([]);
+        const headers = Object.keys(results[0]);
+        const csvRows = results.map((row) =>
+          headers
+            .map((h) => {
+              const val = row[h];
+              const str = val === null || val === undefined ? "" : String(val);
+              return str.includes(",") ||
+                str.includes('"') ||
+                str.includes("\n")
+                ? `"${str.replace(/"/g, '""')}"`
+                : str;
+            })
+            .join(","),
+        );
+        shouldAutoRunNrAnalysisRef.current = Boolean(dictionary);
+        handleRealTimeContent([headers.join(","), ...csvRows].join("\n"));
+        localStorage.setItem("nr_account_id", nrAccountId.trim());
+        localStorage.setItem("nr_query", activeQuery);
+        setNrFetchStatus({
+          type: "success",
+          message: `Loaded ${results.length.toLocaleString()} events from New Relic.`,
+        });
+      } catch (err) {
+        setNrFetchStatus({
+          type: "error",
+          message: err instanceof Error ? err.message : String(err),
+        });
+      } finally {
+        setIsFetchingNr(false);
+      }
+    },
+    [nrAccountId, nrApiKey, nrQuery, handleRealTimeContent, dictionary],
   );
 
   const loadBundledDictionary = useCallback(async () => {
+    if (selectedDictionary !== "default") return;
     try {
       const text = await fetchTextOrThrow(
         `${DEFAULT_DICTIONARY_PATH}${selectedDictionary}.csv`,
         "Failed to fetch dictionary",
       );
-      handleDictionaryContent(text);
+      const parsed = parseDictionary(text);
+      setDictionary(parsed);
+      setLoadedDictionaryKey("default");
+      resetAnalysis();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       alert(message);
     }
-  }, [handleDictionaryContent, selectedDictionary]);
+  }, [selectedDictionary, resetAnalysis]);
+
+  // Load dictionary by source: bundled default or in-memory custom dictionaries.
+  useEffect(() => {
+    if (isCreatingNewDictionary) return;
+
+    const custom = customDictionaries.find(
+      (dictionaryEntry) => dictionaryEntry.id === selectedDictionary,
+    );
+    if (custom) {
+      setDictionary(custom.data);
+      setLoadedDictionaryKey(selectedDictionary);
+      resetAnalysis();
+      return;
+    }
+
+    if (selectedDictionary === "default") {
+      loadBundledDictionary();
+    }
+  }, [
+    selectedDictionary,
+    customDictionaries,
+    isCreatingNewDictionary,
+    loadBundledDictionary,
+    resetAnalysis,
+  ]);
+
+  const saveCurrentDictionary = useCallback(() => {
+    if (!dictionary) {
+      showUiToast("No dictionary data to save.");
+      return;
+    }
+
+    const rawName = newDictionaryName.trim();
+    if (!rawName) {
+      showUiToast("Enter a dictionary name first.");
+      return;
+    }
+
+    const existingNames = new Set(
+      customDictionaries.map((entry) => entry.name.toLowerCase()),
+    );
+    let finalName = rawName;
+    let suffix = 2;
+    while (existingNames.has(finalName.toLowerCase())) {
+      finalName = `${rawName} (${suffix})`;
+      suffix += 1;
+    }
+
+    const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    setCustomDictionaries((previous) => [
+      ...previous,
+      {
+        id,
+        name: finalName,
+        data: dictionary,
+      },
+    ]);
+    setNewDictionaryName(finalName);
+    setSelectedDictionary(id);
+    showUiToast(`Saved dictionary: ${finalName}`);
+  }, [dictionary, newDictionaryName, customDictionaries, showUiToast]);
+
+  useEffect(() => {
+    if (!dictionary) return;
+    if (isCreatingNewDictionary) return;
+    if (selectedDictionary === "default") return;
+    if (loadedDictionaryKey !== selectedDictionary) return;
+
+    setCustomDictionaries((previous) =>
+      previous.map((entry) =>
+        entry.id === selectedDictionary
+          ? { ...entry, data: dictionary }
+          : entry,
+      ),
+    );
+  }, [
+    dictionary,
+    selectedDictionary,
+    isCreatingNewDictionary,
+    loadedDictionaryKey,
+  ]);
 
   const coverageForPlatform = useMemo(
     () => coverageByPlatform[selectedDashboardPlatform],
@@ -1751,17 +2205,26 @@ export const AnalyticsApp = () => {
     [dictionary, selectedDashboardPlatform],
   );
 
-  const platformMeta = useMemo(
-    () => formatPlatformMeta(dictionary, selectedDashboardPlatform),
+  const attributeGroups = useMemo(
+    () =>
+      dictionary
+        ? buildAttributeGroups(dictionary, selectedDashboardPlatform)
+        : [],
     [dictionary, selectedDashboardPlatform],
   );
 
-  const attributeGroups = useMemo(
+  const attributesSummary = useMemo(
     () =>
-      dictionary && isAttributesExpanded
-        ? buildAttributeGroups(dictionary, selectedDashboardPlatform)
-        : [],
-    [dictionary, isAttributesExpanded, selectedDashboardPlatform],
+      attributeGroups.reduce(
+        (totals, group) => {
+          totals.events += 1;
+          totals.required += group.requiredCount;
+          totals.optional += group.optionalCount;
+          return totals;
+        },
+        { events: 0, required: 0, optional: 0 },
+      ),
+    [attributeGroups],
   );
 
   const filteredGapRows = useMemo(
@@ -1779,6 +2242,119 @@ export const AnalyticsApp = () => {
       .writeText(playbackSessions.join("\n"))
       .catch(() => alert("Failed to copy playback sessions"));
   }, [playbackSessions]);
+
+  const removeEventFromDict = useCallback(
+    (eventName: string) => {
+      if (!dictionary) return;
+      const drop = (map: typeof dictionary.all) => {
+        const next = { ...map };
+        delete next[eventName];
+        return next;
+      };
+      setDictionary({
+        events: dictionary.events.filter((e) => e !== eventName),
+        all: drop(dictionary.all),
+        web: drop(dictionary.web),
+        mobile: drop(dictionary.mobile),
+        roku: drop(dictionary.roku),
+      });
+      resetAnalysis();
+    },
+    [dictionary, resetAnalysis],
+  );
+
+  const removeAttributeFromEvent = useCallback(
+    (eventName: string, attrName: string) => {
+      if (!dictionary) return;
+      const drop = (map: typeof dictionary.all) => {
+        if (!map[eventName]) return map;
+        const { [attrName]: _, ...rest } = map[eventName];
+        return { ...map, [eventName]: rest };
+      };
+      setDictionary({
+        ...dictionary,
+        all: drop(dictionary.all),
+        web: drop(dictionary.web),
+        mobile: drop(dictionary.mobile),
+        roku: drop(dictionary.roku),
+      });
+      resetAnalysis();
+    },
+    [dictionary, resetAnalysis],
+  );
+
+  const toggleAttributeStatus = useCallback(
+    (eventName: string, attrName: string) => {
+      if (!dictionary) return;
+      const toggle = (map: typeof dictionary.all) => {
+        const attr = map[eventName]?.[attrName];
+        if (!attr) return map;
+        return {
+          ...map,
+          [eventName]: {
+            ...map[eventName],
+            [attrName]: {
+              ...attr,
+              status: attr.status === "Y" ? ("O" as const) : ("Y" as const),
+            },
+          },
+        };
+      };
+      setDictionary({
+        ...dictionary,
+        all: toggle(dictionary.all),
+        web: toggle(dictionary.web),
+        mobile: toggle(dictionary.mobile),
+        roku: toggle(dictionary.roku),
+      });
+      resetAnalysis();
+    },
+    [dictionary, resetAnalysis],
+  );
+
+  const addAttributeToEvent = useCallback(
+    (eventName: string, attrName: string, status: "Y" | "O") => {
+      if (!dictionary || !attrName.trim()) return;
+      const trimmed = attrName.trim();
+      const newAttr = { name: trimmed, status, original: trimmed };
+      const addAttr = (map: typeof dictionary.all) => {
+        if (!map[eventName]) return map;
+        return {
+          ...map,
+          [eventName]: { ...map[eventName], [trimmed]: newAttr },
+        };
+      };
+      setDictionary({
+        ...dictionary,
+        all: addAttr(dictionary.all),
+        web: addAttr(dictionary.web),
+        mobile: addAttr(dictionary.mobile),
+        roku: addAttr(dictionary.roku),
+      });
+      resetAnalysis();
+    },
+    [dictionary, resetAnalysis],
+  );
+
+  const addEventToDict = useCallback(
+    (eventName: string) => {
+      if (!dictionary || !eventName.trim()) return;
+      const trimmed = eventName.trim();
+      if (dictionary.events.includes(trimmed)) return;
+      const addEvent = (map: typeof dictionary.all) => ({
+        ...map,
+        [trimmed]: {},
+      });
+      setDictionary({
+        events: [...dictionary.events, trimmed],
+        all: addEvent(dictionary.all),
+        web: addEvent(dictionary.web),
+        mobile: addEvent(dictionary.mobile),
+        roku: addEvent(dictionary.roku),
+      });
+    },
+    [dictionary],
+  );
 
   // Filter raw events based on session selections for analysis
   const filteredEventsForAnalysis = useMemo(() => {
@@ -1819,6 +2395,19 @@ export const AnalyticsApp = () => {
   const canShowSessionInfo =
     (selectedSessionId !== "All" || selectedPlaybackSessionId !== "All") &&
     filteredEventsForAnalysis.length > 0;
+
+  const navigateToSection = (sectionId: string, nextTab?: ActiveTab) => {
+    if (nextTab) {
+      setActiveTab(nextTab);
+    }
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
 
   useEffect(() => {
     if (!canShowSessionInfo) {
@@ -2100,9 +2689,37 @@ export const AnalyticsApp = () => {
     selectedPlaybackSessionId,
   ]);
 
+  const handleRunAnalysis = useCallback(() => {
+    if (showNrPanel) {
+      showUiToast(NR_PANEL_LOCK_MESSAGE);
+      return;
+    }
+    setIsAnalyzing(true);
+    // defer heavy work one tick so the loading state renders first
+    setTimeout(() => {
+      runAnalysis();
+      setIsAnalyzing(false);
+    }, 0);
+  }, [runAnalysis, showNrPanel, showUiToast]);
+  const handleRealTimeBrowse = () => {
+    if (showNrPanel) {
+      showUiToast(NR_PANEL_LOCK_MESSAGE);
+      return;
+    }
+    realTimeInputRef.current?.click();
+  };
+
   const dictLoaded = Boolean(dictionary);
   const canProcess = dictLoaded && rawEvents.length > 0;
+  const isManualValidationLocked = showNrPanel;
   const showPlaybackSessions = playbackSessions.length > 0;
+  const showMobileWarningModal = isMobileViewport;
+
+  const showLockedControlsToast = useCallback(() => {
+    if (isManualValidationLocked) {
+      showUiToast(NR_PANEL_LOCK_MESSAGE);
+    }
+  }, [isManualValidationLocked, showUiToast]);
 
   // Re-run analysis when session filters change (if analysis was already performed)
   useEffect(() => {
@@ -2115,7 +2732,19 @@ export const AnalyticsApp = () => {
     }
   }, [selectedSessionId, selectedPlaybackSessionId]); // Only depend on filter changes, not runAnalysis
 
-  const handleRealTimeBrowse = () => realTimeInputRef.current?.click();
+  useEffect(() => {
+    if (
+      !shouldAutoRunNrAnalysisRef.current ||
+      !dictionary ||
+      rawEvents.length === 0
+    ) {
+      return;
+    }
+
+    shouldAutoRunNrAnalysisRef.current = false;
+    setActiveTab("dashboard");
+    runAnalysis();
+  }, [dictionary, rawEvents, runAnalysis]);
 
   const handleRealTimeFileInput = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -2187,7 +2816,49 @@ export const AnalyticsApp = () => {
   }, [rawEvents, selectedSessionId, playbackSessions]);
 
   return (
-    <div className="analytics-app">
+    <div className="analytics-app" data-theme={isDarkMode ? "dark" : "light"}>
+      {isPageLoading && (
+        <div className="page-loading-overlay" aria-label="Loading">
+          <div className="page-loading-spinner" />
+          <span className="page-loading-text">Loading…</span>
+        </div>
+      )}
+      {showMobileWarningModal && (
+        <div className="mobile-warning-overlay" role="dialog" aria-modal="true">
+          <div className="mobile-warning-modal">
+            <h3>Mobile Not Supported</h3>
+            <p>
+              This app is not supported for mobile. Please use tablet or desktop
+              for a better experience.
+            </p>
+          </div>
+        </div>
+      )}
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-brand">
+            <span className="app-brand-icon">◈</span>
+            <div>
+              <div className="app-brand-title">Analytics Validator</div>
+              <div className="app-brand-sub">
+                QA Coverage &amp; Gap Analysis
+              </div>
+            </div>
+          </div>
+          <button
+            className="theme-toggle"
+            onClick={() => {
+              const next = !isDarkMode;
+              setIsDarkMode(next);
+              localStorage.setItem("theme", next ? "dark" : "light");
+            }}
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? "☀️" : "🌙"}
+            <span>{isDarkMode ? "Light" : "Dark"}</span>
+          </button>
+        </div>
+      </header>
       <div className="app-container">
         <nav className="tabs" aria-label="Main Views">
           <button
@@ -2206,118 +2877,376 @@ export const AnalyticsApp = () => {
           >
             Events &amp; Attribute Gaps
           </button>
+          <button
+            className={`tab ${activeTab === "attributes" ? "active" : ""}`}
+            onClick={() => setActiveTab("attributes")}
+            role="tab"
+            aria-selected={activeTab === "attributes"}
+          >
+            Attributes Per Event
+          </button>
         </nav>
 
-        <section className="card fade-in" id="input-files-section">
-          <h2>Input Configuration</h2>
-          <div className="card-header-line"></div>
-
-          <div className="input-config-stack">
-            {/* Data Dictionary */}
-            <div className="input-group">
-              <label className="input-label" htmlFor="data-dictionary-select">
-                <span className="input-label-text">Data Dictionary</span>
-              </label>
-              <div className="select-shell">
-                <select
-                  id="data-dictionary-select"
-                  className="fancy-select"
-                  value={selectedDictionary}
-                  onChange={(event) =>
-                    setSelectedDictionary(event.target.value)
-                  }
-                >
-                  <option value="default">Default</option>
-                  <option value="new">Create New Dictionary</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Platform */}
-            <div className="input-group">
-              <label className="input-label" htmlFor="platform-select">
-                <span className="input-label-text">Platform</span>
-              </label>
-              <div className="select-shell">
-                <select
-                  id="platform-select"
-                  className="fancy-select"
-                  value={selectedDashboardPlatform}
-                  onChange={(event) =>
-                    setSelectedDashboardPlatform(
-                      event.target.value as "All" | Platform,
-                    )
-                  }
-                >
-                  <option value="All">All Platforms</option>
-                  <option value="Web">Web</option>
-                  <option value="Mobile">Mobile</option>
-                  <option value="Roku">Roku</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Analytics Data */}
-            <div className="input-group">
-              <label className="input-label" htmlFor="analytics-data">
-                <span className="input-label-text">Analytics Data</span>
-              </label>
-              <div className="file-upload-compact">
+        {activeTab === "dashboard" && (
+          <>
+            <section className="card fade-in" id="input-files-section">
+              <h2
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span>Input Configuration</span>
                 <button
                   type="button"
-                  className={`file-drop-compact ${isRealTimeDragging ? "dragover" : ""}`}
-                  onClick={handleRealTimeBrowse}
-                  onDrop={handleRealTimeDrop}
-                  onDragOver={(event) => {
-                    event.preventDefault();
-                    setIsRealTimeDragging(true);
+                  className={`nr-toggle-btn${showNrPanel ? " active" : ""}`}
+                  onClick={() => {
+                    setShowNrPanel((value) => {
+                      const next = !value;
+                      if (next) {
+                        showUiToast(NR_PANEL_LOCK_MESSAGE);
+                      }
+                      return next;
+                    });
                   }}
-                  onDragLeave={() => setIsRealTimeDragging(false)}
+                  title="Fetch data directly from New Relic via API"
                 >
-                  {realTimeFile ? (
-                    <>
-                      ⚡{" "}
-                      <span className="file-name-display">
-                        {realTimeFile.name}
+                  {showNrPanel ? "Hide API Connector" : "New Relic API"}
+                </button>
+              </h2>
+              <div className="card-header-line"></div>
+              <p className="input-config-lead">
+                Choose your dictionary, load analytics data, then run validation
+                from a single setup panel.
+              </p>
+
+              <div className="input-config-stack">
+                {/* Data Dictionary */}
+                <div className="input-config-panel input-config-panel-dictionary">
+                  <div className="input-config-panel-head">
+                    <span className="input-config-step">01</span>
+                    <div>
+                      <h3>Dictionary Source</h3>
+                      <p>
+                        Start from the generic sample or create a new
+                        dictionary.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label
+                      className="input-label"
+                      htmlFor="data-dictionary-select"
+                    >
+                      <span className="input-label-text">Data Dictionary</span>
+                    </label>
+                    <div className="select-shell">
+                      <select
+                        id="data-dictionary-select"
+                        className="fancy-select"
+                        value={selectedDictionary}
+                        onChange={(event) => {
+                          const val = event.target.value;
+                          setSelectedDictionary(val);
+                          if (val === CREATE_NEW_DICTIONARY_VALUE) {
+                            setActiveTab("attributes");
+                            setDictionary({
+                              events: [],
+                              all: {},
+                              web: {},
+                              mobile: {},
+                              roku: {},
+                            });
+                            setLoadedDictionaryKey(CREATE_NEW_DICTIONARY_VALUE);
+                            resetAnalysis();
+                          }
+                        }}
+                      >
+                        <option value="default">Default</option>
+                        {customDictionaries.map((entry) => (
+                          <option key={entry.id} value={entry.id}>
+                            {entry.name}
+                          </option>
+                        ))}
+                        <option value={CREATE_NEW_DICTIONARY_VALUE}>
+                          Create New Dictionary
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Analytics Data */}
+                <div className="input-config-panel input-config-panel-data">
+                  <div className="input-config-panel-head">
+                    <span className="input-config-step">02</span>
+                    <div>
+                      <h3>Analytics Feed</h3>
+                      <p>
+                        Upload a validation CSV or keep using the bundled dummy
+                        data.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label" htmlFor="analytics-data">
+                      <span className="input-label-text">Analytics Data</span>
+                    </label>
+                    <div className="file-upload-compact">
+                      <div
+                        style={{ width: "100%" }}
+                        onMouseEnter={showLockedControlsToast}
+                      >
+                        <button
+                          type="button"
+                          className={`file-drop-compact ${isRealTimeDragging ? "dragover" : ""}`}
+                          disabled={isManualValidationLocked}
+                          onClick={handleRealTimeBrowse}
+                          onDrop={handleRealTimeDrop}
+                          title={
+                            isManualValidationLocked
+                              ? "Disabled while New Relic API Connector is open"
+                              : undefined
+                          }
+                          onDragOver={(event) => {
+                            event.preventDefault();
+                            if (isManualValidationLocked) {
+                              showUiToast(NR_PANEL_LOCK_MESSAGE);
+                              return;
+                            }
+                            setIsRealTimeDragging(true);
+                          }}
+                          onDragLeave={() => setIsRealTimeDragging(false)}
+                        >
+                          {realTimeFile ? (
+                            <span className="file-name-display">
+                              {realTimeFile.name}
+                            </span>
+                          ) : (
+                            "Drop CSV or click to browse"
+                          )}
+                        </button>
+                      </div>
+                      <input
+                        type="file"
+                        id="analytics-data"
+                        name="analytics-data"
+                        accept=".csv, text/csv"
+                        className="native-file-input"
+                        ref={realTimeInputRef}
+                        disabled={isManualValidationLocked}
+                        onChange={handleRealTimeFileInput}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Process Button */}
+                <div className="input-config-panel input-config-panel-action">
+                  <div className="input-config-panel-head">
+                    <span className="input-config-step">03</span>
+                    <div>
+                      <h3>Run Validation</h3>
+                      <p>
+                        Generate coverage and gaps once both inputs are ready.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="input-group">
+                    <span
+                      className="input-label input-label-placeholder"
+                      aria-hidden="true"
+                    >
+                      Action
+                    </span>
+                    <div className="process-section">
+                      <div onMouseEnter={showLockedControlsToast}>
+                        <button
+                          onClick={handleRunAnalysis}
+                          disabled={
+                            isManualValidationLocked ||
+                            !canProcess ||
+                            isAnalyzing
+                          }
+                          title={
+                            isManualValidationLocked
+                              ? "Disabled while New Relic API Connector is open"
+                              : undefined
+                          }
+                          id="btn-process"
+                          className={`primary-large${isAnalyzing ? " btn-loading" : ""}`}
+                        >
+                          {isAnalyzing ? (
+                            <>
+                              <span className="btn-spinner" />
+                              Analyzing…
+                            </>
+                          ) : (
+                            "Run Analysis"
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="input-config-note">
+                Default demo analytics data CSV is preloaded. Upload a file only
+                if you want to replace it.
+              </p>
+            </section>
+
+            {/* New Relic API connector panel */}
+            {showNrPanel && (
+              <section className="card fade-in" id="nr-api-section">
+                <h2>New Relic API Connector</h2>
+                <div className="card-header-line" />
+                <div className="nr-info-box">
+                  <strong>What you need:</strong>
+                  <ul className="nr-info-list">
+                    <li>
+                      <span className="nr-info-key">Account ID</span> — numeric
+                      ID from your NR URL or <em>Account settings › General</em>
+                    </li>
+                    <li>
+                      <span className="nr-info-key">User API Key</span> — create
+                      at <em>Profile › API keys</em> (type: User, starts with{" "}
+                      <code>NRAK-</code>). Needs <em>Query Insights events</em>{" "}
+                      permission.
+                    </li>
+                    <li>
+                      <span className="nr-info-key">NRQL Query</span> — must
+                      return rows that include an action/event name column (e.g.{" "}
+                      <code>actionName</code>, <code>name</code>). Use{" "}
+                      <code>SELECT *</code> to capture all attributes.
+                    </li>
+                  </ul>
+                  <p className="nr-info-note">
+                    ⚠️ The API key is never stored — it is cleared when you
+                    refresh the page.
+                  </p>
+                  <p className="nr-info-note">
+                    🔄 If you see a CORS error, stop the dev server and restart
+                    it with <code>npm run dev</code>.
+                  </p>
+                </div>
+                <div className="nr-form">
+                  <div className="nr-field">
+                    <label className="nr-label" htmlFor="nr-account-id">
+                      Account ID
+                    </label>
+                    <input
+                      id="nr-account-id"
+                      type="text"
+                      className="nr-input"
+                      placeholder="e.g. 3759601"
+                      value={nrAccountId}
+                      onChange={(e) => setNrAccountId(e.target.value)}
+                    />
+                  </div>
+                  <div className="nr-field">
+                    <label className="nr-label" htmlFor="nr-api-key">
+                      User API Key
+                    </label>
+                    <input
+                      id="nr-api-key"
+                      type="password"
+                      className="nr-input"
+                      placeholder="NRAK-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                      value={nrApiKey}
+                      onChange={(e) => setNrApiKey(e.target.value)}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="nr-field nr-field-wide">
+                    <label className="nr-label" htmlFor="nr-query">
+                      NRQL Query
+                    </label>
+                    <textarea
+                      id="nr-query"
+                      className="nr-textarea"
+                      rows={3}
+                      placeholder="SELECT * FROM PageAction SINCE 1 hour ago LIMIT 2000"
+                      value={nrQuery}
+                      onChange={(e) => setNrQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="nr-actions">
+                    <button
+                      type="button"
+                      className={`primary-large${isFetchingNr ? " btn-loading" : ""}`}
+                      onClick={() => fetchFromNewRelic()}
+                      disabled={
+                        isFetchingNr ||
+                        !nrAccountId.trim() ||
+                        !nrApiKey.trim() ||
+                        !nrQuery.trim()
+                      }
+                    >
+                      {isFetchingNr ? (
+                        <>
+                          <span className="btn-spinner" />
+                          Fetching…
+                        </>
+                      ) : (
+                        "⚡ Fetch & Load"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      title="Run SHOW EVENT TYPES to discover which event types exist in your account"
+                      onClick={() =>
+                        setNrQuery("SHOW EVENT TYPES SINCE 1 week ago")
+                      }
+                      disabled={isFetchingNr}
+                    >
+                      Discover Event Types
+                    </button>
+                    {nrFetchStatus && (
+                      <span
+                        className={`nr-status nr-status-${nrFetchStatus.type}`}
+                        style={{ whiteSpace: "pre-line" }}
+                      >
+                        {nrFetchStatus.type === "success" ? "✓" : "✕"}{" "}
+                        {nrFetchStatus.message}
                       </span>
-                    </>
-                  ) : (
-                    "⚡ Drop CSV or click to browse"
+                    )}
+                  </div>
+                  {nrEventTypes.length > 0 && (
+                    <div className="nr-event-types">
+                      <p className="nr-event-types-label">
+                        Select an event type to load:
+                      </p>
+                      <div className="nr-event-type-chips">
+                        {nrEventTypes.map((et) => (
+                          <button
+                            key={et}
+                            type="button"
+                            className="nr-event-type-chip"
+                            onClick={() => {
+                              const q = `SELECT * FROM ${et} SINCE 1 week ago LIMIT 2000`;
+                              setNrQuery(q);
+                              setNrEventTypes([]);
+                              setNrFetchStatus(null);
+                              fetchFromNewRelic(q);
+                            }}
+                            title={`Load: SELECT * FROM ${et} SINCE 1 day ago LIMIT 2000`}
+                          >
+                            {et}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </button>
-                <input
-                  type="file"
-                  id="analytics-data"
-                  name="analytics-data"
-                  accept=".csv, text/csv"
-                  className="native-file-input"
-                  ref={realTimeInputRef}
-                  onChange={handleRealTimeFileInput}
-                />
-              </div>
-            </div>
+                </div>
+              </section>
+            )}
+          </>
+        )}
 
-            {/* Process Button */}
-            <div className="input-group">
-              <div className="process-section">
-                <button
-                  onClick={runAnalysis}
-                  disabled={!canProcess}
-                  id="btn-process"
-                  className="primary-large"
-                >
-                  Run Analysis
-                </button>
-              </div>
-            </div>
-          </div>
-          <p className="input-config-note">
-            Default demo analytics data CSV is preloaded. Upload a file only if
-            you want to replace it.
-          </p>
-        </section>
-
-        {dictLoaded && (
+        {activeTab === "attributes" && dictLoaded && (
           <section className="card fade-in" id="attributes-per-event-section">
             <h2
               style={{
@@ -2327,92 +3256,249 @@ export const AnalyticsApp = () => {
               }}
             >
               <span>Attributes Per Event</span>
-              <button
-                type="button"
-                className="btn-secondary tiny"
-                onClick={() => setIsAttributesExpanded((expanded) => !expanded)}
-              >
-                {isAttributesExpanded ? "Collapse" : "Expand"}
-              </button>
             </h2>
             <div className="card-header-line"></div>
             <p className="desc">
               Shows attributes where the cell contains 'Y' (present for that
               event). Optional (O) attributes are noted.
             </p>
-            {isAttributesExpanded && (
-              <>
-                <div
-                  className="controls-inline"
-                  style={{ marginBottom: "15px" }}
+            {isCreatingNewDictionary && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(220px, 360px) auto",
+                  gap: "10px",
+                  alignItems: "end",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <label className="input-label" htmlFor="new-dictionary-name">
+                    <span className="input-label-text">Dictionary Name</span>
+                  </label>
+                  <input
+                    id="new-dictionary-name"
+                    type="text"
+                    className="fancy-select"
+                    value={newDictionaryName}
+                    onChange={(event) =>
+                      setNewDictionaryName(event.target.value)
+                    }
+                    placeholder="Enter dictionary name"
+                    style={{ marginTop: "6px" }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="btn-secondary dd-save-btn"
+                  onClick={saveCurrentDictionary}
+                  disabled={!newDictionaryName.trim() || !dictionary}
+                  style={{ height: "42px" }}
                 >
-                  <div className="filter-group">
-                    <label
-                      htmlFor="platform-view-select"
-                      style={{ fontWeight: 600 }}
-                    >
-                      Platform:
-                    </label>
-                    <select
-                      id="platform-view-select"
-                      value={selectedDashboardPlatform}
-                      onChange={(event) =>
-                        setSelectedDashboardPlatform(
-                          event.target.value as "All" | Platform,
-                        )
-                      }
-                    >
-                      <option value="All">All</option>
-                      <option value="Web">Web</option>
-                      <option value="Mobile">Mobile</option>
-                      <option value="Roku">Roku</option>
-                    </select>
-                    <span style={{ color: "#555", marginLeft: "8px" }}>
-                      {platformMeta}
-                    </span>
-                  </div>
-                </div>
-                <div id="attributes-per-event">
-                  {attributeGroups.map((group) => (
-                    <div
-                      key={group.eventName}
-                      className="event-attributes-group"
-                      style={{ marginBottom: "24px" }}
-                    >
-                      <h3 style={{ marginBottom: "8px", fontSize: "16px" }}>
-                        {group.eventName} — {group.requiredCount} required,{" "}
-                        {group.optionalCount} optional
-                      </h3>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "6px",
-                        }}
-                      >
-                        {group.attributes.map((attribute) => (
-                          <span
-                            key={attribute.name}
-                            className={`badge ${attribute.status === "O" ? "opt" : "req"}`}
-                            style={{
-                              fontSize: "11px",
-                              opacity: attribute.status === "O" ? 0.75 : 1,
-                            }}
-                            title={
-                              attribute.status === "O"
-                                ? "Optional attribute"
-                                : "Required attribute"
-                            }
-                          >
-                            {attribute.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
+                  Save DD
+                </button>
+              </div>
             )}
+            <div
+              className="faded"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "14px",
+                flexWrap: "wrap",
+                marginBottom: "14px",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              <span>Total events: {attributesSummary.events}</span>
+              <span>Required attributes: {attributesSummary.required}</span>
+              <span>Optional attributes: {attributesSummary.optional}</span>
+              {isCreatingNewDictionary && (
+                <span>
+                  Editing dictionary:{" "}
+                  {newDictionaryName.trim() || "Untitled Dictionary"}
+                </span>
+              )}
+            </div>
+            <div id="attributes-per-event">
+              {/* Add new event form */}
+              <div className="add-event-row">
+                <input
+                  type="text"
+                  className="add-event-input"
+                  placeholder="New event name…"
+                  value={newEventName}
+                  onChange={(e) => setNewEventName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newEventName.trim()) {
+                      addEventToDict(newEventName);
+                      setNewEventName("");
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="add-event-btn"
+                  disabled={!newEventName.trim()}
+                  onClick={() => {
+                    addEventToDict(newEventName);
+                    setNewEventName("");
+                  }}
+                >
+                  + Add Event
+                </button>
+              </div>
+              {attributeGroups.map((group) => (
+                <div
+                  key={group.eventName}
+                  className="event-attributes-group"
+                  style={{ marginBottom: "20px" }}
+                >
+                  <div className="event-group-header">
+                    <h3 style={{ margin: 0, fontSize: "14px" }}>
+                      {group.eventName}
+                      <span className="event-group-meta">
+                        {group.requiredCount} required · {group.optionalCount}{" "}
+                        optional
+                      </span>
+                    </h3>
+                    <button
+                      type="button"
+                      className="event-remove-btn"
+                      onClick={() => removeEventFromDict(group.eventName)}
+                      title={`Remove "${group.eventName}" from dictionary`}
+                    >
+                      Remove event
+                    </button>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "5px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    {group.attributes.map((attribute) => (
+                      <span
+                        key={attribute.name}
+                        className={`attr-edit-chip ${attribute.status === "O" ? "opt" : "req"}`}
+                      >
+                        <button
+                          type="button"
+                          className="attr-name-btn"
+                          onClick={() =>
+                            toggleAttributeStatus(
+                              group.eventName,
+                              attribute.name,
+                            )
+                          }
+                          title={`Click to toggle: currently ${attribute.status === "O" ? "Optional" : "Required"}`}
+                        >
+                          {attribute.name}
+                          <span className="attr-status-tag">
+                            {attribute.status === "O" ? "O" : "R"}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className="attr-remove-btn"
+                          onClick={() =>
+                            removeAttributeFromEvent(
+                              group.eventName,
+                              attribute.name,
+                            )
+                          }
+                          title={`Remove "${attribute.name}"`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  {/* Inline add-attribute form */}
+                  {(() => {
+                    const addState = addAttrInputs[group.eventName] ?? {
+                      name: "",
+                      status: "Y" as const,
+                    };
+                    return (
+                      <div className="add-attr-row">
+                        <input
+                          type="text"
+                          className="add-attr-input"
+                          placeholder="Attribute name…"
+                          value={addState.name}
+                          onChange={(e) =>
+                            setAddAttrInputs((prev) => ({
+                              ...prev,
+                              [group.eventName]: {
+                                ...addState,
+                                name: e.target.value,
+                              },
+                            }))
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && addState.name.trim()) {
+                              addAttributeToEvent(
+                                group.eventName,
+                                addState.name,
+                                addState.status,
+                              );
+                              setAddAttrInputs((prev) => ({
+                                ...prev,
+                                [group.eventName]: {
+                                  name: "",
+                                  status: addState.status,
+                                },
+                              }));
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={`add-attr-status-btn ${addState.status === "Y" ? "req" : "opt"}`}
+                          onClick={() =>
+                            setAddAttrInputs((prev) => ({
+                              ...prev,
+                              [group.eventName]: {
+                                ...addState,
+                                status: addState.status === "Y" ? "O" : "Y",
+                              },
+                            }))
+                          }
+                          title="Toggle Required / Optional"
+                        >
+                          {addState.status === "Y" ? "Required" : "Optional"}
+                        </button>
+                        <button
+                          type="button"
+                          className="add-attr-submit-btn"
+                          disabled={!addState.name.trim()}
+                          onClick={() => {
+                            addAttributeToEvent(
+                              group.eventName,
+                              addState.name,
+                              addState.status,
+                            );
+                            setAddAttrInputs((prev) => ({
+                              ...prev,
+                              [group.eventName]: {
+                                name: "",
+                                status: addState.status,
+                              },
+                            }));
+                          }}
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -2450,7 +3536,7 @@ export const AnalyticsApp = () => {
           onHidePartialChange={setHidePartialGaps}
           summary={gapSummary}
           dictionary={dictionary}
-          rawEvents={rawEvents}
+          analyzedEvents={filteredEventsForAnalysis}
         />
         <SessionInfoPanel
           isOpen={isSessionInfoOpen}
@@ -2463,6 +3549,16 @@ export const AnalyticsApp = () => {
           }
           sections={sessionInfoSections}
         />
+        {uiToastMessage && (
+          <div
+            id="copy-toast"
+            className="show"
+            role="status"
+            aria-live="polite"
+          >
+            {uiToastMessage}
+          </div>
+        )}
       </div>
     </div>
   );

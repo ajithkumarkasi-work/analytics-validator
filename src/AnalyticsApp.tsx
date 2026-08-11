@@ -19,15 +19,15 @@ import type {
   GapData,
   Platform,
   RawEvent,
-} from "./types";
+} from "./shared/model/types";
 import {
   buildCoverageData,
   buildGapData,
   parseDictionary,
   parseRealTimeData,
   type DictionaryParseResult,
-} from "./utils/analyticsLogic";
-import { AttributeTooltip } from "./components/AttributeTooltip";
+} from "./shared/lib/analyticsLogic";
+import { AttributeTooltip } from "./shared/ui/attribute-tooltip/AttributeTooltip";
 
 const DEFAULT_DICTIONARY_PATH = `${import.meta.env.BASE_URL}dd/`;
 const CREATE_NEW_DICTIONARY_VALUE = "__create_new_dictionary__";
